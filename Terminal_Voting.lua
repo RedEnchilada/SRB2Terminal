@@ -290,9 +290,6 @@ COM_AddCommand("votekick", function(p, arg)
 	else
 		CONS_Printf(p, "votekick <player>: Alias for startvote kick <player>.")
 	end
-	if arg == nil then
-		CONS_Printf(p, "votekick <player>: Alias for startvote kick <player>.")
-	end
 end)
 
 -- Vote!

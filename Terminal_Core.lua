@@ -233,11 +233,11 @@ addHook("ThinkFrame", do
 		if name ~= p.name then
 			COM_BufInsertText(p, "name \""..name.."\"")
 		end
-		if not player.spectator then
-			if leveltime < 3 and player.rememberspectator then
-				player.spectator = true
+		if not p.spectator then
+			if leveltime < 3 and p.rememberspectator then
+				p.spectator = true
 			else
-				player.rememberspectator = false
+				p.rememberspectator = false
 			end
 		end
 	end
