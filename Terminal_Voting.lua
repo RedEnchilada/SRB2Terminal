@@ -219,12 +219,12 @@ COM_AddCommand("startvote", function(p, arg1, ...)
 		CONS_Printf(p, "You've already made a poll recently! Wait a bit.")
 		return
 	end
-	p.polltimeout = pollopts().limiter*TICRATE*60
 	if not arg1 then
-		CONS_Printf(p, [[startvote <type> [<args>]: Start a poll!
-Available poll types: changemap, changecategory, teamscramble, exitlevel, resetmap, kick, custom, players]])
+		CONS_Printf(p, [[startvote <type> [<args>]: Start a vote to do something in-game!
+Available poll types: changemap, changecategory, teamscramble, exitlevel, resetmap, kick]])
 		return
 	end
+	p.polltimeout = pollopts().limiter*TICRATE*60
 	if arg1 == "changemap" then
 		startPoll(POLL_START|POLL_CHANGEMAP)
 		print(p.name.." wants to change the map.")
@@ -252,18 +252,31 @@ Available poll types: changemap, changecategory, teamscramble, exitlevel, resetm
 		end
 		startPoll(POLL_KICK, player)
 		print(p.name.." wants to kick "..player.name..".")
-	elseif arg1 == "players" then
-		if not ... then
-			CONS_Printf(p, "startvote players <question>: Start a vote where the players are the answer choices.")
-			return
-		end
-		local q = ...
-		startPoll(POLL_PLAYERS, q)
+	end
+end)
+
+COM_AddCommand("startpoll", function(p, question, ...)
+	if voting() then
+		CONS_Printf(p, "There's already a vote in progress!")
+		return
+	end
+	if p.polltimeout and not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
+		CONS_Printf(p, "You've already made a poll recently! Wait a bit.")
+		return
+	end
+	if not question then
+		CONS_Printf(p, [[startpoll <question> [<answer1> <answer2> <...>]: Start a poll with custom parameters!
+If no answers are provided, the names of the current players will be used as answer choices.]])
+		return
+	end
+	p.polltimeout = pollopts().limiter*TICRATE*60
+	if not ... then
+		startPoll(POLL_PLAYERS, question)
 		print(p.name.." has a question about the players in the netgame.")
-	elseif arg1 == "custom" then
-		local _,a,check = ...
+	else
+		local _,check = ...
 		if not check then
-			CONS_Printf(p, "startvote custom <question> <option1> <option2> [...]: Start a custom poll.")
+			CONS_Printf(p, "Polls must have at least two answers.")
 			return
 		end
 		if #{...} > 36 then -- All the brightest lights can be tweaked to
@@ -271,14 +284,7 @@ Available poll types: changemap, changecategory, teamscramble, exitlevel, resetm
 			return -- Crash prevention...
 		end
 		
-		local q = ...
-		local atemp = {...}
-		local answers = {}
-		for i = 2,#atemp do
-			table.insert(answers, atemp[i])
-		end -- This isn't clean, but a select() crashes the game for some reason...
-		
-		startPoll(POLL_CUSTOM, {question = q, answers = answers})
+		startPoll(POLL_CUSTOM, {question = question, answers = {...}})
 		print(p.name.." has a question to ask.")
 	end
 end)
