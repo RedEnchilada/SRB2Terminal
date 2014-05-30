@@ -1,0 +1,6 @@
+// Put all registrations in a file named "term_logins.txt" in your server directory. Format examples shown below.
+//   loadhash "Sanic" 2989421 -1 // Example for a player with all permissions.
+//   loadhash "Teils" 2989421 -41 // Example for a player with all permissions except admin ("do" command) and cheats.
+//   loadhash "Knackels" 2989421 0 // Example for a player with no permissions. :(
+// 
+// Feel free to add exec commands if you need to organize this into multiple subscripts!
