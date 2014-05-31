@@ -1,4 +1,4 @@
--- Terminal Cheats:
+-- Terminal Cheats - LightDash edition:
 -- Optional file. Meant to screw with the game! (Requires Terminal_Core.lua)
 
 -- Permissions used in this file
@@ -70,12 +70,12 @@ COM_AddCommand("god", function(player)
 	end
 	if not (player.pflags & PF_GODMODE)
 		player.pflags = $1|PF_GODMODE
-		--CONS_Printf(player, "Skybase mode enabled.")
-		CONS_Printf(player, "Sissy mode enabled.")
+		CONS_Printf(player, "Skybase mode enabled.")
+		--CONS_Printf(player, "Sissy mode enabled.")
 	else 
 		player.pflags = $1 & ~PF_GODMODE
-		--CONS_Printf(player, "Skybase mode disabled.")
-		CONS_Printf(player, "Sissy mode disabled.")
+		CONS_Printf(player, "Skybase mode disabled.")
+		--CONS_Printf(player, "Sissy mode disabled.")
 	end
 end)
 
@@ -87,12 +87,12 @@ COM_AddCommand("noclip", function(player)
 	end
 	if not (player.pflags & PF_NOCLIP)
 		player.pflags = $1|PF_NOCLIP
-		--CONS_Printf(player, "<BlueCore> Walls arent used in good level design.")
-		CONS_Printf(player, "NoClip enabled.")
+		CONS_Printf(player, "<BlueCore> Walls aren't used in good level design.")
+		--CONS_Printf(player, "NoClip enabled.")
 	else 
 		player.pflags = $1 & ~PF_NOCLIP
-		--CONS_Printf(player, "*Mystic has kicked BlueCore from #srb2fun (There are a lot of things you are not understanding, and this is one of them.)")
-		CONS_Printf(player, "NoClip disabled.")
+		CONS_Printf(player, "*	Mystic has kicked BlueCore from #srb2fun (There are a lot of things you are not understanding, and this is one of them.)")
+		--CONS_Printf(player, "NoClip disabled.")
 	end
 end)
 
@@ -224,11 +224,11 @@ COM_AddCommand("showplayers", function(p)
 	if not p.showPOn
 		p.showPOn = true
 		--CONS_Printf(p, "The Eggman Empire is ALWAYS watching its subjects...")
-		CONS_Printf(p, "Player location display enabled.")
+		CONS_Printf(p, "NSA mode enabled.")
 	else 
 		p.showPOn = false
 		--CONS_Printf(p, "Getting these names out of your face.")
-		CONS_Printf(p, "Player location display disabled.")
+		CONS_Printf(p, "NSA mode disabled.")
 	end
 end)
 
@@ -252,7 +252,7 @@ COM_AddCommand("warpto", function(p, arg1)
 		return
 	end
 	P_TeleportMove(p.mo, player.mo.x, player.mo.y, player.mo.z)
-	--print(p.name.." is now touching butts with "..player.name..".")
+	CONS_Printf(p, "Warp complete.")
 	P_FlashPal(p, PAL_MIXUP, 10)
 	S_StartSound(p.mo, sfx_mixup)
 end)
@@ -261,7 +261,7 @@ end)
 COM_AddCommand("suicide", function(player)
 	if player.mo and player.mo.health > 0
 		P_DamageMobj(player.mo, nil, nil, 10000)
-		print(player.name+" committed seppuku.")
+		print(player.name+" could not bear the shame and committed seppuku.")
 	end
 end)
 
@@ -271,7 +271,7 @@ COM_AddCommand("getallemeralds", function(player)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	CONS_Printf(player, "Fear my overpowered recolor!")
+	CONS_Printf(player, "Fear my overpowered recolor! LOLOLOLOLOLOL")
 	player.powers[pw_emeralds] = 127
 end)
 
@@ -287,7 +287,7 @@ COM_AddCommand("scale", function(p, scale)
 		return
 	end
 	p.mo.destscale = nScale
-	--print(p.name .. " changed size using black magic!")
+	print(p.name .. " changed size using black magic!")
 end)
 
 -- Change your character's ability!
@@ -389,4 +389,10 @@ Possible values: none (removes your shield), force, elemental AKA fire, attracti
 	P_RemoveMobj(sh)
 	S_StartSound(p.mo, sfx_shield)
 	CONS_Printf(p, "Shield changed to \""..shield.."\".")
+end)
+
+COM_AddCommand("footcancer", function(player)
+	P_KillMobj(player.mo, player.mo, player.mo)
+	CONS_Printf(player, "You really are an idiot, aren't you?")
+	print(player.name.." stubbed their toe too hard.")
 end)

@@ -1,4 +1,4 @@
--- Terminal map list
+-- Terminal map list - Updated for LightDash server maps
 -- Used with the voting script to generate a map list. Feel free to alter for your own uses.
 function A_MServ_GetMapList()
 	local coopmaplist = {
@@ -61,7 +61,7 @@ function A_MServ_GetMapList()
 		[536] = "Desolate Twilight Zone",
 		[537] = "Infernal Cavern Zone",
 		[538] = "Orbital Hangar Zone",
-		[539] = "Frost Columns Zone",
+		[539] = "Fuck Toohoos Zone",
 		[540] = "Granite Lake Zone",
 		[541] = "Diamond Blizzard Zone",
 		[542] = "Celestial Sanctuary Zone",

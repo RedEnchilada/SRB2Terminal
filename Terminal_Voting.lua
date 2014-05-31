@@ -1,4 +1,4 @@
--- Terminal Voting
+-- Terminal Voting - LightDash edition
 -- Voting system, for map changes and other useful things! (Requires Terminal_Core.lua, as well as Terminal_Maplist.lua or an equivalent)
 
 -- Stuff from the main Terminal file
@@ -78,7 +78,7 @@ local function getMapChangePoll(poll, polltype)
 		
 		-- Branch poll types
 		if polltype == POLL_CHANGECATEGORY then
-			poll.question = "Change to which category?"
+			poll.question = "Change to which gametype?"
 			for category,v in pairs(maplist) do
 				if category == currentcategory then continue end
 				local defaultmap = v[3]
@@ -117,7 +117,7 @@ local function startPoll(polltype, arg)
 	local poll = {
 		votes = {},
 		votemap = {},
-		answers = {"Bologna", "Alfalfa", "LOL O HAY GUIZ"},
+		answers = {"Eggs", "wolfs", "LOL O HAY GUIZ"},
 		question = "Why doesn't this poll have a question set?!",
 		timer = pollopts().timeout*TICRATE,
 		tiebreaker = function(...) -- This deals with ties. The default functionality is to return a random option from the ones given. (Args are each option in a tie)
@@ -132,7 +132,7 @@ local function startPoll(polltype, arg)
 		if polltype == POLL_CHANGEMAP then
 			poll.question = "Change map?"
 		elseif polltype == POLL_CHANGECATEGORY then
-			poll.question = "Change map category?"
+			poll.question = "Change the current gametype?"
 		else
 			poll.question = "Start doing nothing?"
 		end
@@ -219,18 +219,19 @@ COM_AddCommand("startvote", function(p, arg1, ...)
 		CONS_Printf(p, "You've already made a poll recently! Wait a bit.")
 		return
 	end
+	p.polltimeout = pollopts().limiter*TICRATE*60
 	if not arg1 then
 		CONS_Printf(p, [[startvote <type> [<args>]: Start a vote to do something in-game!
-Available poll types: changemap, changecategory, teamscramble, exitlevel, resetmap, kick]])
+Available poll types: changemap, changegametype, teamscramble, exitlevel, resetmap, kick]])
 		return
 	end
-	p.polltimeout = pollopts().limiter*TICRATE*60
+	p.polltimeout = pollopts().limiter*TICRATE*60 
 	if arg1 == "changemap" then
 		startPoll(POLL_START|POLL_CHANGEMAP)
 		print(p.name.." wants to change the map.")
-	elseif arg1 == "changecategory" then
+	elseif arg1 == "changegametype" then
 		startPoll(POLL_START|POLL_CHANGECATEGORY)
-		print(p.name.." wants to change the category.")
+		print(p.name.." wants to change the gametype.")
 	elseif arg1 == "teamscramble" then
 		startPoll(POLL_TEAMSCRAMBLE)
 		print(p.name.." wants to scramble teams.")
@@ -254,14 +255,13 @@ Available poll types: changemap, changecategory, teamscramble, exitlevel, resetm
 		print(p.name.." wants to kick "..player.name..".")
 	end
 end)
-
 COM_AddCommand("startpoll", function(p, question, ...)
 	if voting() then
 		CONS_Printf(p, "There's already a vote in progress!")
 		return
 	end
 	if p.polltimeout and not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
-		CONS_Printf(p, "You've already made a poll recently! Wait a bit.")
+		CONS_Printf("You've already made a poll recently! Wait a bit.")
 		return
 	end
 	if not question then
@@ -496,6 +496,6 @@ COM_AddCommand("removepoll", function(p)
 		CONS_Printf(p, "No poll to remove!")
 		return
 	end
-	print(p.name.." removed the current poll without resolving it.")
+	print(p.name.." killed the current poll.")
 	A_MServ().voting = nil
 end)

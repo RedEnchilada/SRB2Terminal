@@ -1,4 +1,4 @@
--- Terminal Login:
+-- Terminal Logins - LightDash edition:
 -- Optional file. Handles logins and registration. (Requires Terminal_Core.lua)
 
 -- TODO globalify this
@@ -151,7 +151,7 @@ end)
 
 -- Overriding "verify" and "password" to lock out the old vanilla verification system - it'll just cause confusion!
 local function noOldAuth(p)
-	CONS_Printf(p, "\x82verify\x80 and \x82password\x80 are out. Type \x82term_help logins\x80 for more information about the new authentication system in place!")
+	CONS_Printf(p, "\x82verify\x80 and \x82password\x80 have been removed, dude. Type \x82term_help logins\x80 for more information about the new authentication system in place!")
 end
 COM_AddCommand("verify", noOldAuth)
 COM_AddCommand("password", noOldAuth)
@@ -165,7 +165,7 @@ local function nickservopts()
 	if not s.nickservopts then
 		s.nickservopts = {
 			timeout = 30, -- Timeout in seconds - 0 disables
-			default = "Guest" -- Name to change them to - P_Random() is stitched onto the end of this
+			default = "Eggs" -- Name to change them to - P_Random() is stitched onto the end of this
 		}
 	end
 	return s.nickservopts

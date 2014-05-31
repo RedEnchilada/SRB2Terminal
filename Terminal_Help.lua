@@ -1,4 +1,4 @@
--- Terminal Help
+-- Terminal Help - LightDash edition
 -- Displays information regarding the use of Terminal commands.
 
 addHook("ThinkFrame", do
@@ -31,13 +31,13 @@ hud.add(function(v, p)
 		end
 		
 		if not customgraphics then
-			v.drawString(20, 60, "Welcome to SRB2 Terminal!\n\n\n\n\n\n\nType \"term_help\" in the console to\nlearn more about this server.", V_ALLOWLOWERCASE, "left")
+			v.drawString(20, 60, "Welcome to the LightDash.org SRB2 server!\n\n\n\n\n\n\nType \"term_help\" in the console to\nlearn more about this server.", V_ALLOWLOWERCASE, "left")
 		end
 	end
 end, "game")
 
 COM_AddCommand("term_help", function(p, arg1)
-	local disp = [[Welcome to SRB2 Terminal!
+	local disp = [[Welcome to LightDash.org's SRB2 server, powered by Terminal!
 This mod for SRB2 servers adds lots of additional functionality to improve the netplay experience, such as votes for map changing or kicking obnoxious players, a brand-new permissions system, and optional multiplayer cheats!
 
 To learn more, type "term_help <topic>". The following topics are available:
@@ -82,7 +82,9 @@ Testers:
 
 The latest vanilla release can always be found at http://terminal.lightdash.org/!]]
 -- Do not remove these credits. Uncomment the below line if you've modified Terminal and wish to state this.
-		--.."\n\nModifications for this server:\n  <name(s) here>"
+		..[[
+		Modifications for this server:
+		  Wolfy]]
 	}
 	
 	if helpindex[arg1] then

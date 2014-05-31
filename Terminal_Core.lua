@@ -1,4 +1,4 @@
--- Terminal (GitHub working version) - The first SRB2 server hosting overhaul utility!
+-- Terminal v1.0 - The first SRB2 server hosting overhaul utility!
 -- Created by Wolfy and RedEnchilada
 -- Special thanks to Steel Titanium, Puppyfaic, and SonicX8000 for testing!
 
@@ -290,7 +290,7 @@ COM_AddCommand("kill", function(p, arg1)
 	end
 	local player = A_MServ_getPlayerFromString(arg1)
 	if not player then
-		CONS_Printf(p, "Player "..arg1.." does not exist!")
+		CONS_Printf(p, "Player "..arg1.." does not exist! You can't slay nothing!")
 		return
 	end
 	if player.mo and player.mo.health > 0
@@ -371,7 +371,7 @@ COM_AddCommand("do", function(p, ...)
 	local firstcmd = ...
 	for _,i in ipairs(blacklist) do
 		if firstcmd == i then
-			CONS_Printf(p, ("Command \"%s\" has been blacklisted from the \"do\" command."):format(i))
+			CONS_Printf(p, ("Whoa there, you're trying to do some dangerous shit m8!"):format(i))
 			return
 		end
 	end
@@ -392,5 +392,5 @@ end)
 
 -- Show that Terminal is being run on the scores screen!
 hud.add(function(v)
-	v.drawString(320, 192, "Server running Terminal (GitHub version)", V_ALLOWLOWERCASE|V_40TRANS, "right")
+	v.drawString(320, 192, "LightDash runs Terminal v1.0", V_ALLOWLOWERCASE|V_40TRANS, "right")
 end, "scores")
