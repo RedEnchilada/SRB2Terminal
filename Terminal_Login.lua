@@ -17,12 +17,12 @@ local function logPasses()
 	if not s.logPasses then
 		s.logPasses = {}
 		COM_BufInsertText(s, "exec term_logins.txt -silent") -- Load passes from log file
-		s.logpasstimeout = 200
+		s.logpasstimeout = 400
 	elseif s.logpasstimeout > 0 then
 		s.logpasstimeout = $1-1
 	else
 		COM_BufInsertText(s, "exec term_logins.txt -silent") -- Reload for safety
-		s.logpasstimeout = 200
+		s.logpasstimeout = 400
 	end
 	return s.logPasses -- name = {hash, perms},
 end
