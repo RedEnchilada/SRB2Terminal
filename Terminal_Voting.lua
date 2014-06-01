@@ -219,7 +219,6 @@ COM_AddCommand("startvote", function(p, arg1, ...)
 		CONS_Printf(p, "You've already made a poll recently! Wait a bit.")
 		return
 	end
-	p.polltimeout = pollopts().limiter*TICRATE*60
 	if not arg1 then
 		CONS_Printf(p, [[startvote <type> [<args>]: Start a vote to do something in-game!
 Available poll types: changemap, changegametype, teamscramble, exitlevel, resetmap, kick]])
@@ -255,6 +254,7 @@ Available poll types: changemap, changegametype, teamscramble, exitlevel, resetm
 		print(p.name.." wants to kick "..player.name..".")
 	end
 end)
+
 COM_AddCommand("startpoll", function(p, question, ...)
 	if voting() then
 		CONS_Printf(p, "There's already a vote in progress!")
