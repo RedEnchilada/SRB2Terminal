@@ -123,7 +123,7 @@ COM_AddCommand("givepermission", function(p, arg1, arg2)
 	end
 	
 	if not permMap[arg2] then
-		CONS_Printf(p, printf("Invalid parameter %s.", arg2))
+		CONS_Printf(p, ("Invalid parameter \"%s\"."):format(arg2))
 		return
 	end
 	
@@ -167,7 +167,7 @@ COM_AddCommand("removepermission", function(p, arg1, arg2)
 	end
 	
 	if not permMap[arg2] then
-		CONS_Printf(p, printf("Invalid parameter %s.", arg2))
+		CONS_Printf(p, ("Invalid parameter %s."):format(arg2))
 		return
 	end
 	
@@ -315,6 +315,11 @@ COM_AddCommand("dokick", function(p, arg1, ...)
 		return
 	end
 	
+	if A_MServ_HasPermission(player, UP_FULLCONTROL) not A_MServ_HasPermission(p, UP_FULLCONTROL) then
+		CONS_Printf(p, "Only admins can kick or ban other admins.")
+		return
+	end
+	
 	local cmd = ("kick %s <%s>"):format(#player, p.name)
 	for _,i in ipairs({...}) do
 		if i:find(" ")
@@ -338,6 +343,11 @@ COM_AddCommand("doban", function(p, arg1, ...)
 	local player = A_MServ_getPlayerFromString(arg1)
 	if not player then
 		CONS_Printf(p, "Player "..arg1.." does not exist!")
+		return
+	end
+	
+	if A_MServ_HasPermission(player, UP_FULLCONTROL) not A_MServ_HasPermission(p, UP_FULLCONTROL) then
+		CONS_Printf(p, "Only admins can kick or ban other admins.")
 		return
 	end
 	

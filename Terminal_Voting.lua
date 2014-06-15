@@ -13,6 +13,7 @@ end
 
 -- Permissions used in this file
 local UP_GAMEMANAGE = 16
+local UP_FULLCONTROL = 32
 -- Don't copy-pastarino the above!
 
 -- Map voting! (And other types of voting, while we're here!)
@@ -248,6 +249,12 @@ Available poll types: changemap, changegametype, teamscramble, exitlevel, resetm
 		local player = A_MServ_getPlayerFromString(...)
 		if not player then
 			CONS_Printf(p, ("Player %s doesn't exist!"):format(...))
+			p.polltimeout = 0
+			return
+		end
+		if A_MServ_HasPermission(player, UP_FULLCONTROL) then
+			CONS_Printf(p, ("Player %s is an admin or host. You can't votekick those!"):format(...))
+			p.polltimeout = 0
 			return
 		end
 		startPoll(POLL_KICK, player)
@@ -277,10 +284,12 @@ If no answers are provided, the names of the current players will be used as ans
 		local _,check = ...
 		if not check then
 			CONS_Printf(p, "Polls must have at least two answers.")
+			p.polltimeout = 0
 			return
 		end
 		if #{...} > 36 then -- All the brightest lights can be tweaked to
 			CONS_Printf(p, "Too many answer options - max is 35.") -- Cover up the worst of my worst intentions
+			p.polltimeout = 0
 			return -- Crash prevention...
 		end
 		
