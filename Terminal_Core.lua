@@ -123,7 +123,7 @@ COM_AddCommand("givepermission", function(p, arg1, arg2)
 	end
 	
 	if not permMap[arg2] then
-		CONS_Printf(p, printf("Invalid parameter %s.", arg2))
+		CONS_Printf(p, ("Invalid parameter \"%s\"."):format(arg2))
 		return
 	end
 	
@@ -167,7 +167,7 @@ COM_AddCommand("removepermission", function(p, arg1, arg2)
 	end
 	
 	if not permMap[arg2] then
-		CONS_Printf(p, printf("Invalid parameter %s.", arg2))
+		CONS_Printf(p, ("Invalid parameter %s."):format(arg2))
 		return
 	end
 	
