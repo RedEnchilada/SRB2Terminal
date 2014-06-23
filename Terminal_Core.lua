@@ -189,27 +189,24 @@ COM_AddCommand("removepermission", function(p, arg1, arg2)
 end)
 
 -- Hack for dedicated servers
-local dediServer
+-- local dediServer
 
-COM_AddCommand("iamtheserver", function(p)
+--[[COM_AddCommand("iamtheserver", function(p)
 	if p == server or p == admin then return end -- Dedicated servers only!
 	dediServer = p
 	--COM_BufInsertText(p, "wait 15;wait 15;wait 15;iamtheserver") -- To keep syncing it for players! (lol NetVars hook still being broken)
-end, 1)
+end, 1)]]
 
 function A_MServ()
 	if not netgame then return end -- Just make everything explode in single-player then :v
-	if dediServer and not dediServer.valid then
-		dediServer = nil
-	end
-	return server or dediServer
+	return server or dedicatedserver
 end
 
-addHook("PlayerJoin", do
+--[[addHook("PlayerJoin", do
 	if dediServer and dediServer.valid then
 		COM_BufInsertText(dediServer, "wait 1;iamtheserver")
 	end
-end)
+end)]]
 
 -- Player symbol management
 local function getSymbol(player)
