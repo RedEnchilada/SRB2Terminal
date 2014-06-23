@@ -205,7 +205,7 @@ end)]]
 local function getSymbol(player)
 	if player == server then return "~" end -- The server already has a symbol next to their name in chat!
 	local p = player.servperm
-	if not p then return nil end
+	if not p then return "" end
 	if (p & UP_FULLCONTROL) then return "&" end
 	if (p & UP_PLAYERMANAGE) then return "@" end
 	if (p & UP_GAMEMANAGE) then return "%" end
@@ -214,18 +214,25 @@ end
 
 -- Manage player names
 addHook("PlayerMsg", function(source, msgtype, target, message)
+	if message:sub(1, 1) == "!" then
+		COM_BufInsertText(source, message:sub(2))
+		return true
+	end
 	if msgtype == 0 then 
 		print("<"..getSymbol(source)..source.name.."> "..message)
 		S_StartSound(nil, sfx_radio)
+	elseif msgtype == 1 then -- TODO: Proper sound starting for players
+		for player in players.iterate do
+			if player.ctfteam == source.ctfteam then
+				CONS_Printf(player, ">>"..getSymbol(source)..source.name.."<< "..message)
+			end
+		end
+	elseif msgtype == 2 then -- TODO: Proper sound starting for players
+		CONS_Printf(source, "->*"..getSymbol(target)..target.name.."* "..message)
+		CONS_Printf(target, "*"..getSymbol(source)..source.name.."* "..message)
+	end
+	if msgtype ~= 3
 		return true
-	elseif msgtype == 1 then
-		print(">>"..getSymbol(source)..source.name.."<< "..message)
-		return true
-	elseif msgtype == 2 then
-		print("*"..getSymbol(source)..source.name.."* "..message)
-		return true
-	elseif msgtype == 3 then
-		return false
 	end
 end)
 -- Spectate yourself!
