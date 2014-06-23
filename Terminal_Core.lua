@@ -4,22 +4,15 @@
 
 -- Core file, contains base framework for Terminal functions.
 
--- Helper function for getting a name without the leading permission symbol
-local function cleanName(name)
-	while name:find("^[!&#%%+]") do
-		name = name:sub(2)
-	end
-	return name
-end
 
 -- Helper function for identifying a player
 function A_MServ_getPlayerFromString(src)
 	if tonumber(src) ~= nil then
 		return players[tonumber(src)]
 	else
-		src = cleanName(src):lower()
+		src = src:lower()
 		for player in players.iterate do
-			if cleanName(player.name):lower() == src then return player end
+			if player.name:lower() == src then return player end
 		end
 	end
 end
@@ -210,40 +203,35 @@ end)]]
 
 -- Player symbol management
 local function getSymbol(player)
-	if player == server then return "!" end -- The server already has a symbol next to their name in chat!
+	if player == server then return "~" end -- The server already has a symbol next to their name in chat!
 	local p = player.servperm
 	if not p then return nil end
 	if (p & UP_FULLCONTROL) then return "&" end
-	if (p & UP_PLAYERMANAGE) then return "#" end
+	if (p & UP_PLAYERMANAGE) then return "@" end
 	if (p & UP_GAMEMANAGE) then return "%" end
 	if (p & permMap.allcheat) then return "+" end
 end
 
 -- Manage player names
-addHook("ThinkFrame", do
-	for p in players.iterate do
-		local name = cleanName(p.name)
-		local sym = getSymbol(p)
-		if sym then
-			name = sym..name
-		end
-		if name ~= p.name then
-			COM_BufInsertText(p, "name \""..name.."\"")
-		end
-		if not p.spectator then
-			if leveltime < 3 and p.rememberspectator then
-				p.spectator = true
-			else
-				p.rememberspectator = false
-			end
-		end
+addHook("PlayerMsg", function(source, msgtype, target, message)
+	if msgtype == 0 then 
+		print("<"..getSymbol(source)..source.name.."> "..message)
+		S_StartSound(nil, sfx_radio)
+		return true
+	elseif msgtype == 1 then
+		print(">>"..getSymbol(source)..source.name.."<< "..message)
+		return true
+	elseif msgtype == 2 then
+		print("*"..getSymbol(source)..source.name.."* "..message)
+		return true
+	elseif msgtype == 3 then
+		return false
 	end
 end)
-
 -- Spectate yourself!
 COM_AddCommand("spectate", function(player)
 	player.rememberspectator = true
-	if not player.spectator == true
+	if not player.spectator == true then
 		player.spectator = true
 		print(player.name.." became a spectator.")
 	end
@@ -312,7 +300,7 @@ COM_AddCommand("dokick", function(p, arg1, ...)
 		return
 	end
 	
-	if A_MServ_HasPermission(player, UP_FULLCONTROL) not A_MServ_HasPermission(p, UP_FULLCONTROL) then
+	if A_MServ_HasPermission(player, UP_FULLCONTROL) and not A_MServ_HasPermission(p, UP_FULLCONTROL) then
 		CONS_Printf(p, "Only admins can kick or ban other admins.")
 		return
 	end
@@ -343,7 +331,7 @@ COM_AddCommand("doban", function(p, arg1, ...)
 		return
 	end
 	
-	if A_MServ_HasPermission(player, UP_FULLCONTROL) not A_MServ_HasPermission(p, UP_FULLCONTROL) then
+	if A_MServ_HasPermission(player, UP_FULLCONTROL) and not A_MServ_HasPermission(p, UP_FULLCONTROL) then
 		CONS_Printf(p, "Only admins can kick or ban other admins.")
 		return
 	end

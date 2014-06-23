@@ -1,13 +1,6 @@
 -- Terminal Login:
 -- Optional file. Handles logins and registration. (Requires Terminal_Core.lua)
 
--- TODO globalify this
-local function cleanName(name)
-	while name:find("^[!&#%%+]") do
-		name = name:sub(2)
-	end
-	return name
-end
 
 --local logPasses = {} -- name = {hash, perms},
 
@@ -58,7 +51,7 @@ COM_AddCommand("login", function(p, arg1, arg2)
 			return
 		end
 		pass = arg1
-		name = cleanName(p.name)
+		name = p.name
 	else
 		name = arg1
 		pass = arg2
@@ -74,7 +67,7 @@ COM_AddCommand("login", function(p, arg1, arg2)
 	end
 	
 	p.servperm = ($1 or 0)|passes[name][2]
-	if cleanName(p.name) ~= name then
+	if p.name ~= name then
 		print(p.name .. " has logged into "..name.."'s account.")
 	else
 		print(p.name .. " has logged into their account.")
@@ -114,7 +107,7 @@ COM_AddCommand("register", function(p, pass)
 		return
 	end
 	pass = passwordHash(pass)
-	local name = cleanName(p.name)
+	local name = p.name
 	if not p.servperm then p.servperm = 0 end
 	
 	local updatingpass = false
@@ -179,7 +172,7 @@ addHook("ThinkFrame", do
 	if not (opts and opts.timeout) then return end
 	for p in players.iterate do
 		for name,values in pairs(passes) do
-			if cleanName(p.name) == name and p.nickservname ~= name then
+			if p.name == name and p.nickservname ~= name then
 				if p.nickservcheck ~= name then
 					p.nickservcheck = name
 					CONS_Printf(p, "This name is registered. Please login within "..nickservopts().timeout.." seconds or your name will be forcibly changed.")

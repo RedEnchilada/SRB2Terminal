@@ -2,14 +2,6 @@
 -- Voting system, for map changes and other useful things! (Requires Terminal_Core.lua, as well as Terminal_Maplist.lua or an equivalent)
 
 -- Stuff from the main Terminal file
--- Helper function for getting a name without the leading permission symbol
-local function cleanName(name)
-	while name:find("^[!&#%%+]") do
-		name = name:sub(2)
-	end
-	return name
-end
-
 
 -- Permissions used in this file
 local UP_GAMEMANAGE = 16
