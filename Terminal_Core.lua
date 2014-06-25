@@ -203,13 +203,19 @@ end)]]
 
 -- Player symbol management
 local function getSymbol(player)
-	if player == server then return "~" end -- The server already has a symbol next to their name in chat!
+	if player == server then return "~" end -- Server
 	local p = player.servperm
-	if not p then return "" end
-	if (p & UP_FULLCONTROL) then return "&" end
-	if (p & UP_PLAYERMANAGE) then return "@" end
-	if (p & UP_GAMEMANAGE) then return "%" end
-	if (p & permMap.allcheat) then return "+" end
+	if not p then return "" end -- No permissions! D:
+	if (p & UP_FULLCONTROL) then return "&" end -- Admin
+	if (p & UP_PLAYERMANAGE) then return "@" end -- Operator
+	if (p & UP_GAMEMANAGE) then return "%" end -- Half-Op
+	if (p & permMap.allcheat) then return "+" end -- Cheater
+end
+
+local function getTeam(player)
+	if player.ctfteam == 0 then return "\x80" end -- white, no team
+	if player.ctfteam == 1 then return "\x85" end -- red
+	if player.ctfteam == 2 then return "\x84" end -- blue
 end
 
 -- Manage player names
@@ -219,17 +225,17 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 		return true
 	end
 	if msgtype == 0 then 
-		print("<"..getSymbol(source)..source.name.."> "..message)
+		print("<"..getTeam(source)..getSymbol(source)..source.name.."\x80> "..message)
 		S_StartSound(nil, sfx_radio)
 	elseif msgtype == 1 then -- TODO: Proper sound starting for players
 		for player in players.iterate do
 			if player.ctfteam == source.ctfteam then
-				CONS_Printf(player, ">>"..getSymbol(source)..source.name.."<< "..message)
+				CONS_Printf(player, ">>"..getTeam(source)..getSymbol(source)..source.name.."\x80<< "..message)
 			end
 		end
 	elseif msgtype == 2 then -- TODO: Proper sound starting for players
-		CONS_Printf(source, "->*"..getSymbol(target)..target.name.."* "..message)
-		CONS_Printf(target, "*"..getSymbol(source)..source.name.."* "..message)
+		CONS_Printf(source, "->*"..getTeam(target)..getSymbol(target)..target.name.."\x80* "..message)
+		CONS_Printf(target, "*"..getTeam(source)..getSymbol(source)..source.name.."\x80* "..message)
 	end
 	if msgtype ~= 3
 		return true
