@@ -201,21 +201,32 @@ end
 	end
 end)]]
 
+-- Colors:
+
+local white = "\x80" 
+local purple = "\x81" 
+local yellow = "\x82" 
+local green = "\x83" 
+local blue = "\x84" 
+local red = "\x85" 
+local grey = "\x86" 
+local orange = "\x87" 
+
 -- Player symbol management
 local function getSymbol(player)
-	if player == server then return "\x83~\x80" end -- Server
+	if player == server then return green.."~"..white end -- Server
 	local p = player.servperm
 	if not p then return "" end -- No permissions! D:
-	if (p & UP_FULLCONTROL) then return "\x83&\x80" end -- Admin
-	if (p & UP_PLAYERMANAGE) then return "\x83@\x80" end -- Operator
-	if (p & UP_GAMEMANAGE) then return "\x83%\x80" end -- Half-Op
-	if (p & permMap.allcheat) then return "\x83+\x80" end -- Cheater
+	if (p & UP_FULLCONTROL) then return green.."&"..white end -- Admin
+	if (p & UP_PLAYERMANAGE) then return green.."@"..white end -- Operator
+	if (p & UP_GAMEMANAGE) then return green.."%"..white end -- Half-Op
+	if (p & permMap.allcheat) then return green.."+"..white end -- Cheater
 end
 
-local function getTeam(player)
-	if player.ctfteam == 0 then return "\x80" end -- white, no team
-	if player.ctfteam == 1 then return "\x85" end -- red
-	if player.ctfteam == 2 then return "\x84" end -- blue
+local function getTeamColor(player) -- Function for retrieving the current team color
+	if player.ctfteam == 0 then return white end
+	if player.ctfteam == 1 then return red end 
+	if player.ctfteam == 2 then return blue end 
 end
 
 -- Manage player names
@@ -225,18 +236,18 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 		return true
 	end
 	if msgtype == 0 then 
-		print("<"..getSymbol(source)..getTeam(source)..source.name.."\x80> "..message)
+		print("<"..getSymbol(source)..getTeamColor(source)..source.name..white.."> "..message)
 		S_StartSound(nil, sfx_radio)
 	elseif msgtype == 1 then 
 		for player in players.iterate do
 			if player.ctfteam == source.ctfteam then
-				CONS_Printf(player, ">>"..getSymbol(source)..getTeam(source)..source.name.."\x80<< "..message)
+				CONS_Printf(player, ">>"..getSymbol(source)..getTeamColor(source)..source.name..white.."<< "..message)
 				S_StartSound(nil, sfx_radio, player)
 			end
 		end
 	elseif msgtype == 2 then 
-		CONS_Printf(source, "->*"..getSymbol(target)..getTeam(target)..target.name.."\x80* "..message)
-		CONS_Printf(target, "*"..getSymbol(source)..getTeam(source)..source.name.."\x80* "..message)
+		CONS_Printf(source, "->*"..getSymbol(target)..getTeamColor(target)..target.name..white.."* "..message)
+		CONS_Printf(target, "*"..getSymbol(source)..getTeamColor(source)..source.name..white.."* "..message)
 		S_StartSound(nil, sfx_radio, source)
 		S_StartSound(nil, sfx_radio, target)
 	end
