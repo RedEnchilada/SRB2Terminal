@@ -203,13 +203,13 @@ end)]]
 
 -- Player symbol management
 local function getSymbol(player)
-	if player == server then return "~" end -- Server
+	if player == server then return "\x83~\x80" end -- Server
 	local p = player.servperm
 	if not p then return "" end -- No permissions! D:
-	if (p & UP_FULLCONTROL) then return "&" end -- Admin
-	if (p & UP_PLAYERMANAGE) then return "@" end -- Operator
-	if (p & UP_GAMEMANAGE) then return "%" end -- Half-Op
-	if (p & permMap.allcheat) then return "+" end -- Cheater
+	if (p & UP_FULLCONTROL) then return "\x83&\x80" end -- Admin
+	if (p & UP_PLAYERMANAGE) then return "\x83@\x80" end -- Operator
+	if (p & UP_GAMEMANAGE) then return "\x83%\x80" end -- Half-Op
+	if (p & permMap.allcheat) then return "\x83+\x80" end -- Cheater
 end
 
 local function getTeam(player)
@@ -225,17 +225,20 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 		return true
 	end
 	if msgtype == 0 then 
-		print("<"..getTeam(source)..getSymbol(source)..source.name.."\x80> "..message)
+		print("<"..getSymbol(source)..getTeam(source)..source.name.."\x80> "..message)
 		S_StartSound(nil, sfx_radio)
-	elseif msgtype == 1 then -- TODO: Proper sound starting for players
+	elseif msgtype == 1 then 
 		for player in players.iterate do
 			if player.ctfteam == source.ctfteam then
-				CONS_Printf(player, ">>"..getTeam(source)..getSymbol(source)..source.name.."\x80<< "..message)
+				CONS_Printf(player, ">>"..getSymbol(source)..getTeam(source)..source.name.."\x80<< "..message)
+				S_StartSound(nil, sfx_radio, player)
 			end
 		end
-	elseif msgtype == 2 then -- TODO: Proper sound starting for players
-		CONS_Printf(source, "->*"..getTeam(target)..getSymbol(target)..target.name.."\x80* "..message)
-		CONS_Printf(target, "*"..getTeam(source)..getSymbol(source)..source.name.."\x80* "..message)
+	elseif msgtype == 2 then 
+		CONS_Printf(source, "->*"..getSymbol(target)..getTeam(target)..target.name.."\x80* "..message)
+		CONS_Printf(target, "*"..getSymbol(source)..getTeam(source)..source.name.."\x80* "..message)
+		S_StartSound(nil, sfx_radio, source)
+		S_StartSound(nil, sfx_radio, target)
 	end
 	if msgtype ~= 3
 		return true
