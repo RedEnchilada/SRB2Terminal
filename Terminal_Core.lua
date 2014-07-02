@@ -224,14 +224,17 @@ local function getSymbol(player)
 end
 
 local function getTeamColor(player) -- Function for retrieving the current team color
-	if player.ctfteam == 0 then return white end
-	if player.ctfteam == 1 then return red end 
-	if player.ctfteam == 2 then return blue end 
+	if G_GametypeHasTeams() then
+		if player.ctfteam == 0 then return white end
+		if player.ctfteam == 1 then return red end 
+		if player.ctfteam == 2 then return blue end 
+	else return ""
+	end
 end
 
 -- Manage player names
 addHook("PlayerMsg", function(source, msgtype, target, message)
-	if message:sub(1, 1) == "!" then
+	if message:sub(1, 1) == "/" then
 		COM_BufInsertText(source, message:sub(2))
 		return true
 	end
