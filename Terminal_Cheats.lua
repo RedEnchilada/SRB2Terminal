@@ -6,16 +6,9 @@ local UP_SELFCHEATS = 1
 local UP_OTHERCHEATS = 2
 local UP_GLOBALCHEATS = 4
 
--- Colors:
+-- Colors used in this file:
 
-local white = "\x80" 
-local purple = "\x81" 
 local yellow = "\x82" 
-local green = "\x83" 
-local blue = "\x84" 
-local red = "\x85" 
-local grey = "\x86" 
-local orange = "\x87" 
 
 --SetRings Command
 COM_AddCommand("setrings", function(p, health)
@@ -70,10 +63,7 @@ COM_AddCommand("god", function(player)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if player.playerstate ~= PST_LIVE then
-		CONS_Printf(player, "You're dead, stupid.")
-		return
-	end
+	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
 	if not (player.pflags & PF_GODMODE)
 		player.pflags = $1|PF_GODMODE
 		--CONS_Printf(player, "Skybase mode enabled.")
@@ -91,10 +81,7 @@ COM_AddCommand("noclip", function(player)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if player.playerstate ~= PST_LIVE then
-		CONS_Printf(player, "You're dead, stupid.")
-		return
-	end
+	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
 	if not (player.pflags & PF_NOCLIP)
 		player.pflags = $1|PF_NOCLIP
 		--CONS_Printf(player, "<BlueCore> Walls arent used in good level design.")
@@ -114,12 +101,7 @@ hud.add(function(v, player)
 		v.drawString(320, 184, string.format("Z: %6d", player.mo.z>>FRACBITS), V_MONOSPACE, "right")
 		v.drawString(320, 192, string.format("A: %6d", AngleFixed(player.mo.angle)/FRACUNIT), V_MONOSPACE, "right")
 	end
-end, "game")
-
--- Maybe something like this? -Red
-v.DrawString(320, 168, "Pos="..player.mo.x/FRACUNIT..","..player.mo.y/FRACUNIT..","..player.mo.z/FRACUNIT, V_MONOSPACE, right)
-v.DrawString(320, 176, "Ang="..AngleFixed(player.mo.angle)/FRACUNIT, V_MONOSPACE, right)
-v.DrawString(320, 184, "Mom="..player.mo.momx/FRACUNIT..","..player.mo.momy/FRACUNIT..","..player.mo.momz/FRACUNIT, V_MONOSPACE, right)]]
+end, "game")]]
 
 -- Devmode ~ Lemme know if it should be done differently. -Red
 hud.add(function(v, player)
@@ -239,10 +221,7 @@ COM_AddCommand("warpto", function(p, arg1)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if p.playerstate ~= PST_LIVE then
-		CONS_Printf(p, "You're dead, stupid.")
-		return
-	end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	if arg1 == nil then
 		CONS_Printf(p, "warpto <player>: Warp to another player's location!")
 		return
@@ -264,10 +243,7 @@ end)
 
 -- Kill urself, loser
 COM_AddCommand("suicide", function(player)
-	if player.playerstate ~= PST_LIVE then
-		CONS_Printf(player, "You're dead, stupid.")
-		return
-	end
+	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
 	if player.mo and player.mo.health > 0
 		P_DamageMobj(player.mo, nil, nil, 10000)
 		print(player.name+" committed seppuku.")
@@ -280,10 +256,7 @@ COM_AddCommand("getallemeralds", function(player)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if player.playerstate ~= PST_LIVE then
-		CONS_Printf(player, "You're dead, stupid.")
-		return
-	end
+	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
 	CONS_Printf(player, "Fear my overpowered recolor!")
 	player.powers[pw_emeralds] = 127
 end)
@@ -294,10 +267,7 @@ COM_AddCommand("scale", function(p, scale)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if p.playerstate ~= PST_LIVE then
-		CONS_Printf(p, "You're dead, stupid.")
-		return
-	end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	local nScale = A_MServ_floatFixed(scale)
 	if not nScale then
 		CONS_Printf(p, "scale <number>: Make yourself bigger or smaller!")
@@ -368,10 +338,7 @@ COM_AddCommand("gravflip", function(p)
 		CONS_Printf(p, "You're dead, stupid.")
 		return 
 	end]]
-	if p.playerstate ~= PST_LIVE then
-		CONS_Printf(p, "You're dead, stupid.")
-		return
-	end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	p.mo.flags2 = $1^^MF2_OBJECTFLIP
 end)
 
@@ -381,14 +348,8 @@ COM_AddCommand("giveshield", function(p, shield)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not p.mo then
-		CONS_Printf(player, "You can't use this while spectating.")
-		return 
-	end
-	if p.playerstate ~= PST_LIVE then
-		CONS_Printf(p, "You're dead, stupid.")
-		return
-	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	local sh = P_SpawnMobj(p.mo.x, p.mo.y, p.mo.z, MT_THOK)
 	sh.target = p.mo
 	
@@ -445,8 +406,7 @@ COM_AddCommand("skinflags", function(p, flags)
 		return
 	end
 	if not flags then
-		CONS_Printf(p, [[
-skinflags <flags>: Change your current skin flags! Works like the 'flags' variable in S_SKIN. You can set multiple flags with the | operator. 
+		CONS_Printf(p, [[skinflags <flags>: Change your current skin flags! You can set multiple flags with the | operator. Flag prefix is SF_. 
 Examples:
 ]]..yellow..[['$1 |SF_FLAG']]..white..[[ will give you the specified flag. 
 ]]..yellow..[['$1 &!SF_FLAG']]..white..[[ will remove the flag.
@@ -466,21 +426,10 @@ COM_AddCommand("mobjflags", function(p, flags)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not p.mo then
-		CONS_Printf(player, "You can't use this while spectating.")
-		return 
-	end
-	if p.playerstate ~= PST_LIVE then
-		CONS_Printf(p, "You're dead, stupid.")
-		return
-	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	if not flags then
-		CONS_Printf(p, [[
-mobjflags <flags>: Change your current mobj flags! Works like the 'flags' variable in SOC. You can set multiple flags with the | operator. 
-Examples:
-]]..yellow..[['$1 |MF_FLAG']]..white..[[ will give you the specified flag. 
-]]..yellow..[['$1 &!MF_FLAG']]..white..[[ will remove the flag.
-]]..yellow..[['MF_FLAG|MF_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		CONS_Printf(p, [[mobjflags <flags>: Change your current mobj flags! You can set multiple flags with the | operator. Flag prefix is MF_, see the 'skinflags' command for examples.]])
 		return
 	end
 	if flags:sub(1, 2) == "$1" then
@@ -496,21 +445,10 @@ COM_AddCommand("mobjflags2", function(p, flags)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not p.mo then
-		CONS_Printf(player, "You can't use this while spectating.")
-		return 
-	end
-	if p.playerstate ~= PST_LIVE then
-		CONS_Printf(p, "You're dead, stupid.")
-		return
-	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	if not flags then
-		CONS_Printf(p, [[
-mobjflags2 <flags>: Change your current MF2 flags! Works like 'A_SetObjectFlags2' in SOC. You can set multiple flags with the | operator. 
-Examples:
-]]..yellow..[['$1 |MF2_FLAG']]..white..[[ will give you the specified flag. 
-]]..yellow..[['$1 &!MF2_FLAG']]..white..[[ will remove the flag.
-]]..yellow..[['MF2_FLAG|MF2_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		CONS_Printf(p, [[mobjflags2 <flags>: Change your current MF2 flags! You can set multiple flags with the | operator. Flag prefix is MF2_, see the 'skinflags' command for examples.]])
 		return
 	end
 	if flags:sub(1, 2) == "$1" then
@@ -526,21 +464,10 @@ COM_AddCommand("mobjeflags", function(p, flags)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not p.mo then
-		CONS_Printf(player, "You can't use this while spectating.")
-		return 
-	end
-	if p.playerstate ~= PST_LIVE then
-		CONS_Printf(p, "You're dead, stupid.")
-		return
-	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	if not flags then
-		CONS_Printf(p, [[
-mobjeflags <flags>: Change your current mobj extra flags! Works pretty much the same as the other sets of flags. You can set multiple flags with the | operator. 
-Examples:
-]]..yellow..[['$1 |MFE_FLAG']]..white..[[ will give you the specified flag. 
-]]..yellow..[['$1 &!MFE_FLAG']]..white..[[ will remove the flag.
-]]..yellow..[['MFE_FLAG|MFE_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		CONS_Printf(p, [[mobjeflags <flags>: Change your current mobj extra flags! You can set multiple flags with the | operator. Flag prefix is MFE_, see the 'skinflags' command for examples.]])
 		return
 	end
 	if flags:sub(1, 2) == "$1" then
@@ -556,21 +483,10 @@ COM_AddCommand("pflags", function(p, flags)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not p.mo then
-		CONS_Printf(player, "You can't use this while spectating.")
-		return 
-	end
-	if p.playerstate ~= PST_LIVE then
-		CONS_Printf(p, "You're dead, stupid.")
-		return
-	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	if not flags then
-		CONS_Printf(p, [[
-pflags <flags>: Change your current player flags! Works pretty much the same as the other sets of flags. You can set multiple flags with the | operator. 
-Examples:
-]]..yellow..[['$1 |PF_FLAG']]..white..[[ will give you the specified flag. 
-]]..yellow..[['$1 &!PF_FLAG']]..white..[[ will remove the flag.
-]]..yellow..[['PF_FLAG|PF_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		CONS_Printf(p, [[pflags <flags>: Change your current player flags! You can set multiple flags with the | operator. Flag prefix is MF_, see the 'skinflags' command for examples.]])
 		return
 	end
 	if flags:sub(1, 2) == "$1" then
