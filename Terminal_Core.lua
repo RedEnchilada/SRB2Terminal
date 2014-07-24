@@ -232,6 +232,10 @@ local function getTeamColor(player) -- Function for retrieving the current team 
 	end
 end
 
+local function getTermName(player) -- Grabs Terminal names, so the PlayerMsg hook below isn't a clustered mess.
+	return getSymbol(player)..getTeamColor(player)..player.name..white
+end
+
 -- Manage player names
 addHook("PlayerMsg", function(source, msgtype, target, message)
 	if message:sub(1, 1) == "/" then
@@ -239,18 +243,18 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 		return true
 	end
 	if msgtype == 0 then 
-		print("<"..getSymbol(source)..getTeamColor(source)..source.name..white.."> "..message)
+		print("<"..getTermName(source).."> "..message)
 		S_StartSound(nil, sfx_radio)
 	elseif msgtype == 1 then 
 		for player in players.iterate do
 			if player.ctfteam == source.ctfteam then
-				CONS_Printf(player, ">>"..getSymbol(source)..getTeamColor(source)..source.name..white.."<< "..message)
+				CONS_Printf(player, ">>"..getTermName(source).."<< "..message)
 				S_StartSound(nil, sfx_radio, player)
 			end
 		end
 	elseif msgtype == 2 then 
-		CONS_Printf(source, "->*"..getSymbol(target)..getTeamColor(target)..target.name..white.."* "..message)
-		CONS_Printf(target, "*"..getSymbol(source)..getTeamColor(source)..source.name..white.."* "..message)
+		CONS_Printf(source, "->*"..getTermName(target).."* "..message)
+		CONS_Printf(target, "*"..getTermName(source).."* "..message)
 		S_StartSound(nil, sfx_radio, source)
 		S_StartSound(nil, sfx_radio, target)
 	end
