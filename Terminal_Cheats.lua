@@ -6,6 +6,17 @@ local UP_SELFCHEATS = 1
 local UP_OTHERCHEATS = 2
 local UP_GLOBALCHEATS = 4
 
+-- Colors:
+
+local white = "\x80" 
+local purple = "\x81" 
+local yellow = "\x82" 
+local green = "\x83" 
+local blue = "\x84" 
+local red = "\x85" 
+local grey = "\x86" 
+local orange = "\x87" 
+
 --SetRings Command
 COM_AddCommand("setrings", function(p, health)
 	if not A_MServ_HasPermission(p, UP_GLOBALCHEATS) then
@@ -25,16 +36,8 @@ COM_AddCommand("setrings", function(p, health)
 	end
 	for player in players.iterate
 		if player.spectator then continue end
-		--player.prevhealth = player.health
 		player.health = health 
 		player.mo.health = health 
-		--[[if player.health >= 2147483000
-			player.health = 2147480000
-		end
-		if health < 0
-			player.health = player.prevhealth
-			P_GivePlayerRings(player, -1)
-		end]]
 		P_GivePlayerRings(player, 1)
 	end
 end)
@@ -57,7 +60,6 @@ COM_AddCommand("setlives", function(p, lives)
 		return
 	end
 	for player in players.iterate
-		--player.prevlives = player.lives
 		player.lives = lives
 	end
 end)
@@ -66,6 +68,10 @@ end)
 COM_AddCommand("god", function(player)
 	if not A_MServ_HasPermission(player, UP_SELFCHEATS) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	if player.playerstate ~= PST_LIVE then
+		CONS_Printf(player, "You're dead, stupid.")
 		return
 	end
 	if not (player.pflags & PF_GODMODE)
@@ -85,6 +91,10 @@ COM_AddCommand("noclip", function(player)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
+	if player.playerstate ~= PST_LIVE then
+		CONS_Printf(player, "You're dead, stupid.")
+		return
+	end
 	if not (player.pflags & PF_NOCLIP)
 		player.pflags = $1|PF_NOCLIP
 		--CONS_Printf(player, "<BlueCore> Walls arent used in good level design.")
@@ -96,7 +106,7 @@ COM_AddCommand("noclip", function(player)
 	end
 end)
 
---[[WIP devmode stuff.
+--[[Old devmode stuff.
 hud.add(function(v, player)
 	if player.devmodeOn then
 		v.drawString(320, 168, string.format("X: %6d", player.mo.x>>FRACBITS), V_MONOSPACE, "right")
@@ -106,17 +116,8 @@ hud.add(function(v, player)
 	end
 end, "game")
 
-COM_AddCommand("devmode", function(player)
-	if not player.devmodeOn then
-		player.devmodeOn = true
-		CONS_Printf(player, "This console message for rent.")
-	else player.devmodeOn = false
-		CONS_Printf(player, "This console message for rent.")
-	end
-end)]]
-
 -- Maybe something like this? -Red
---[[v.DrawString(320, 168, "Pos="..player.mo.x/FRACUNIT..","..player.mo.y/FRACUNIT..","..player.mo.z/FRACUNIT, V_MONOSPACE, right)
+v.DrawString(320, 168, "Pos="..player.mo.x/FRACUNIT..","..player.mo.y/FRACUNIT..","..player.mo.z/FRACUNIT, V_MONOSPACE, right)
 v.DrawString(320, 176, "Ang="..AngleFixed(player.mo.angle)/FRACUNIT, V_MONOSPACE, right)
 v.DrawString(320, 184, "Mom="..player.mo.momx/FRACUNIT..","..player.mo.momy/FRACUNIT..","..player.mo.momz/FRACUNIT, V_MONOSPACE, right)]]
 
@@ -238,6 +239,10 @@ COM_AddCommand("warpto", function(p, arg1)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
+	if p.playerstate ~= PST_LIVE then
+		CONS_Printf(p, "You're dead, stupid.")
+		return
+	end
 	if arg1 == nil then
 		CONS_Printf(p, "warpto <player>: Warp to another player's location!")
 		return
@@ -259,6 +264,10 @@ end)
 
 -- Kill urself, loser
 COM_AddCommand("suicide", function(player)
+	if player.playerstate ~= PST_LIVE then
+		CONS_Printf(player, "You're dead, stupid.")
+		return
+	end
 	if player.mo and player.mo.health > 0
 		P_DamageMobj(player.mo, nil, nil, 10000)
 		print(player.name+" committed seppuku.")
@@ -271,6 +280,10 @@ COM_AddCommand("getallemeralds", function(player)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
+	if player.playerstate ~= PST_LIVE then
+		CONS_Printf(player, "You're dead, stupid.")
+		return
+	end
 	CONS_Printf(player, "Fear my overpowered recolor!")
 	player.powers[pw_emeralds] = 127
 end)
@@ -279,6 +292,10 @@ end)
 COM_AddCommand("scale", function(p, scale)
 	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	if p.playerstate ~= PST_LIVE then
+		CONS_Printf(p, "You're dead, stupid.")
 		return
 	end
 	local nScale = A_MServ_floatFixed(scale)
@@ -297,13 +314,13 @@ COM_AddCommand("charability", function(player, arg1)
 		return
 	end
 	if not arg1 then
-		CONS_Printf(player, "charability <ability>: Change your ability! Arguments are number format. Check the wiki for details.")
+		CONS_Printf(player, "charability <ability>: Change your ability! Accepts CA_ arguments or numbers.")
 		return
 	end
 	if arg1 == "default" then
 		player.charability = skins[player.mo.skin].ability
 	else
-		player.charability = tonumber(arg1)
+		player.charability = EvalMath(arg1:upper())
 	end
 end)
 
@@ -314,13 +331,13 @@ COM_AddCommand("charability2", function(player, arg1)
 		return
 	end
 	if not arg1 then
-		CONS_Printf(player, "charability2 <ability>: Change your secondary ability! Arguments are number format. Check the wiki for details.")
+		CONS_Printf(player, "charability2 <ability>: Change your secondary ability! Accepts CA_ arguments or numbers.")
 		return
 	end
 	if arg1 == "default" then
 		player.charability2 = skins[player.mo.skin].ability2
 	else
-		player.charability2 = tonumber(arg1)
+		player.charability2 = EvalMath(arg1:upper())
 	end
 end)
 
@@ -347,6 +364,14 @@ COM_AddCommand("gravflip", function(p)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
+	--[[if not p.mo then
+		CONS_Printf(p, "You're dead, stupid.")
+		return 
+	end]]
+	if p.playerstate ~= PST_LIVE then
+		CONS_Printf(p, "You're dead, stupid.")
+		return
+	end
 	p.mo.flags2 = $1^^MF2_OBJECTFLIP
 end)
 
@@ -356,7 +381,14 @@ COM_AddCommand("giveshield", function(p, shield)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	
+	if not p.mo then
+		CONS_Printf(player, "You can't use this while spectating.")
+		return 
+	end
+	if p.playerstate ~= PST_LIVE then
+		CONS_Printf(p, "You're dead, stupid.")
+		return
+	end
 	local sh = P_SpawnMobj(p.mo.x, p.mo.y, p.mo.z, MT_THOK)
 	sh.target = p.mo
 	
@@ -389,4 +421,161 @@ Possible values: none (removes your shield), force, elemental AKA fire, attracti
 	P_RemoveMobj(sh)
 	S_StartSound(p.mo, sfx_shield)
 	CONS_Printf(p, "Shield changed to \""..shield.."\".")
+end)
+
+-- By the power of 2.1.9, RunOnWater!
+COM_AddCommand("runonwater", function(p)
+	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	if not (p.charflags & SF_RUNONWATER) then
+		CONS_Printf(p, "Water running enabled.")
+		p.charflags = $1|SF_RUNONWATER
+	else
+		p.charflags = $1 & ~SF_RUNONWATER
+		CONS_Printf(p, "Water running disabled.")
+	end
+end)
+
+-- Skin flags, because why not?
+COM_AddCommand("skinflags", function(p, flags)
+	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	if not flags then
+		CONS_Printf(p, [[
+skinflags <flags>: Change your current skin flags! Works like the 'flags' variable in S_SKIN. You can set multiple flags with the | operator. 
+Examples:
+]]..yellow..[['$1 |SF_FLAG']]..white..[[ will give you the specified flag. 
+]]..yellow..[['$1 &!SF_FLAG']]..white..[[ will remove the flag.
+]]..yellow..[['SF_FLAG|SF_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		return
+	end
+	if flags:sub(1, 2) == "$1" then
+		p.charflags = $1..EvalMath(flags:upper():sub(3))
+	else
+		p.charflags = EvalMath(flags:upper())
+	end
+end)
+
+-- Mobj flags, useful for screwing around
+COM_AddCommand("mobjflags", function(p, flags)
+	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	if not p.mo then
+		CONS_Printf(player, "You can't use this while spectating.")
+		return 
+	end
+	if p.playerstate ~= PST_LIVE then
+		CONS_Printf(p, "You're dead, stupid.")
+		return
+	end
+	if not flags then
+		CONS_Printf(p, [[
+mobjflags <flags>: Change your current mobj flags! Works like the 'flags' variable in SOC. You can set multiple flags with the | operator. 
+Examples:
+]]..yellow..[['$1 |MF_FLAG']]..white..[[ will give you the specified flag. 
+]]..yellow..[['$1 &!MF_FLAG']]..white..[[ will remove the flag.
+]]..yellow..[['MF_FLAG|MF_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		return
+	end
+	if flags:sub(1, 2) == "$1" then
+		p.mo.flags = $1..EvalMath(flags:upper():sub(3))
+	else
+		p.mo.flags = EvalMath(flags:upper())
+	end
+end)
+
+-- Mobj flags 2, more stuff to mess around with
+COM_AddCommand("mobjflags2", function(p, flags)
+	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	if not p.mo then
+		CONS_Printf(player, "You can't use this while spectating.")
+		return 
+	end
+	if p.playerstate ~= PST_LIVE then
+		CONS_Printf(p, "You're dead, stupid.")
+		return
+	end
+	if not flags then
+		CONS_Printf(p, [[
+mobjflags2 <flags>: Change your current MF2 flags! Works like 'A_SetObjectFlags2' in SOC. You can set multiple flags with the | operator. 
+Examples:
+]]..yellow..[['$1 |MF2_FLAG']]..white..[[ will give you the specified flag. 
+]]..yellow..[['$1 &!MF2_FLAG']]..white..[[ will remove the flag.
+]]..yellow..[['MF2_FLAG|MF2_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		return
+	end
+	if flags:sub(1, 2) == "$1" then
+		p.mo.flags2 = $1..EvalMath(flags:upper():sub(3))
+	else
+		p.mo.flags2 = EvalMath(flags:upper())
+	end
+end)
+
+-- Mobj extra flags, you know the drill.
+COM_AddCommand("mobjeflags", function(p, flags)
+	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	if not p.mo then
+		CONS_Printf(player, "You can't use this while spectating.")
+		return 
+	end
+	if p.playerstate ~= PST_LIVE then
+		CONS_Printf(p, "You're dead, stupid.")
+		return
+	end
+	if not flags then
+		CONS_Printf(p, [[
+mobjeflags <flags>: Change your current mobj extra flags! Works pretty much the same as the other sets of flags. You can set multiple flags with the | operator. 
+Examples:
+]]..yellow..[['$1 |MFE_FLAG']]..white..[[ will give you the specified flag. 
+]]..yellow..[['$1 &!MFE_FLAG']]..white..[[ will remove the flag.
+]]..yellow..[['MFE_FLAG|MFE_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		return
+	end
+	if flags:sub(1, 2) == "$1" then
+		p.mo.eflags = $1..EvalMath(flags:upper():sub(3))
+	else
+		p.mo.eflags = EvalMath(flags:upper())
+	end
+end)
+
+-- Player flags, for all kinds of things!
+COM_AddCommand("pflags", function(p, flags)
+	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	if not p.mo then
+		CONS_Printf(player, "You can't use this while spectating.")
+		return 
+	end
+	if p.playerstate ~= PST_LIVE then
+		CONS_Printf(p, "You're dead, stupid.")
+		return
+	end
+	if not flags then
+		CONS_Printf(p, [[
+pflags <flags>: Change your current player flags! Works pretty much the same as the other sets of flags. You can set multiple flags with the | operator. 
+Examples:
+]]..yellow..[['$1 |PF_FLAG']]..white..[[ will give you the specified flag. 
+]]..yellow..[['$1 &!PF_FLAG']]..white..[[ will remove the flag.
+]]..yellow..[['PF_FLAG|PF_FLAG2']]..white..[[ will give you all of the specified flags.]])
+		return
+	end
+	if flags:sub(1, 2) == "$1" then
+		p.pflags = $1..EvalMath(flags:upper():sub(3))
+	else
+		p.pflags = EvalMath(flags:upper())
+	end
 end)
