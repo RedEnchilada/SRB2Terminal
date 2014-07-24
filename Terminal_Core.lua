@@ -181,7 +181,7 @@ COM_AddCommand("removepermission", function(p, arg1, arg2)
 	end
 end)
 
--- Hack for dedicated servers
+-- Outdated hack for dedicated servers. Thanks to 2.1.9, we can point directly to the struct!
 -- local dediServer
 
 --[[COM_AddCommand("iamtheserver", function(p)
@@ -195,6 +195,7 @@ function A_MServ()
 	return server or dedicatedserver
 end
 
+-- Deprecated synchronization code
 --[[addHook("PlayerJoin", do
 	if dediServer and dediServer.valid then
 		COM_BufInsertText(dediServer, "wait 1;iamtheserver")

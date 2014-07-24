@@ -3,6 +3,17 @@
 
 -- Stuff from the main Terminal file
 
+-- Colors!
+
+local white = "\x80" 
+local purple = "\x81" 
+local yellow = "\x82" 
+local green = "\x83" 
+local blue = "\x84" 
+local red = "\x85" 
+local grey = "\x86" 
+local orange = "\x87" 
+
 -- Permissions used in this file
 local UP_GAMEMANAGE = 16
 local UP_FULLCONTROL = 32

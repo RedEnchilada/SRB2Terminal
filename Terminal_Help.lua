@@ -1,6 +1,17 @@
 -- Terminal Help
 -- Displays information regarding the use of Terminal commands.
 
+-- Colors, could be of use here
+
+local white = "\x80" 
+local purple = "\x81" 
+local yellow = "\x82" 
+local green = "\x83" 
+local blue = "\x84" 
+local red = "\x85" 
+local grey = "\x86" 
+local orange = "\x87" 
+
 addHook("ThinkFrame", do
 	for p in players.iterate do
 		p.serverlogintime = ($1 or 0)+1
