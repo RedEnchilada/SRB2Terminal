@@ -54,6 +54,113 @@ local function pollopts()
 	return s.pollopts
 end
 
+-- Map list (the function is still global in case other scripts use it)
+local function mapoverrides(name)
+	if A_MServ_MapOverride then
+		local f = A_MServ_MapOverride(name) -- Define this function in a separate script if you want to have your own custom overrides
+		if f then return f end
+	end
+	
+	local srb1 = {SRB1 = GT_COOP}
+	local list = {
+		["Knothole Base Zone 1"] = srb1,
+		["Knothole Base Zone 2"] = srb1,
+		["Great Forest Zone 1"] = srb1,
+		["Great Forest Zone 2"] = srb1,
+		["Lake Zone 1"] = srb1,
+		["Lake Zone 2"] = srb1,
+		["Ice Palace Zone 1"] = srb1,
+		["Ice Palace Zone 2"] = srb1,
+		["Volcano Zone 1"] = srb1,
+		["Volcano Zone 2"] = srb1,
+		["Echidnapolis Zone 1"] = srb1,
+		["Echidnapolis Zone 2"] = srb1,
+		["Sky Lab Zone 1"] = srb1,
+		["Sky Lab Zone 2"] = srb1,
+		["Mechanical Madness Zone 1"] = srb1,
+		["Mechanical Madness Zone 2"] = srb1,
+		["Robotopolis Zone 1"] = srb1,
+		["Robotopolis Zone 2"] = srb1,
+		["Robo Base Zone 1"] = srb1,
+		["Robo Base Zone 2"] = srb1,
+		["Ringsatellite Zone 1"] = srb1,
+		["Ringsatellite Zone 2"] = srb1,
+		["Athenos Zone"] = srb1,
+		["Great Unknown Zone"] = srb1,
+		["Void Zone"] = srb1,
+		["Woodland Hill Zone"] = srb1,
+		["Rocky Mountain Zone"] = srb1,
+		["Hidden Palace Zone"] = srb1
+	}
+	
+	return list[name]
+end
+
+function A_MServ_GetMapList()
+	local maplist = {}
+	
+	local function tern(cond, t, f)
+   		if cond return t else return f end
+	end
+	for i = 1, #mapheaderinfo do
+		if mapheaderinfo[i] then
+			local lvname = mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " Zone")..tern(mapheaderinfo[i].actnum == 0, "", " "..mapheaderinfo[i].actnum)
+			print(i.."=>"..lvname)
+			
+			local gtlist
+			if mapheaderinfo[i]["termcategory1"] then
+				gtlist = {}
+				local j = 1
+				while mapheaderinfo[i]["termcategory"..j] do
+					local s = mapheaderinfo[i]["termcategory"..j]
+					j = j+1
+					
+					s:gsub("(.-),(.*)", function(name, category)
+						local _ = (pcall(function()
+							category = EvalMath(category)
+						end) or (function()
+							category = GT_COOP
+							print("Invalid gametype!")
+						end)())
+						
+						gtlist[name] = category
+					end)
+				end
+			else
+				gtlist = mapoverrides(lvname)
+				if not gtlist then
+					gtlist = {}
+					if (mapheaderinfo[i].typeoflevel & TOL_COOP) then
+						gtlist["Co-op"] = GT_COOP
+					end
+					if (mapheaderinfo[i].typeoflevel & TOL_RACE) then
+						gtlist["Race"] = GT_RACE
+						gtlist["Competition"] = GT_COMPETITION
+					end
+					if (mapheaderinfo[i].typeoflevel & TOL_MATCH) then
+						gtlist["Match"] = GT_MATCH
+						gtlist["Team Match"] = GT_TEAMMATCH
+					end
+					if (mapheaderinfo[i].typeoflevel & TOL_CTF) then
+						gtlist["Capture the Flag"] = GT_CTF
+					end
+				end
+			end
+			
+			for k,v in pairs(gtlist) do
+				if not maplist[k] then
+					maplist[k] = {v, {[i] = lvname}, i}
+				else
+					maplist[k][2][i] = lvname
+				end
+			end
+		end 
+	end
+	
+	return maplist-- ["Category Name"] = {gametype, maplist, defaultmap},
+end
+-- /map list
+
 local function getMapChangePoll(poll, polltype)
 		local answermaplist = {} -- This will be a list of map commands
 		local answerstringlist = {}
