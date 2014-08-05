@@ -105,7 +105,7 @@ function A_MServ_GetMapList()
 	for i = 1, #mapheaderinfo do
 		if mapheaderinfo[i] then
 			local lvname = mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " Zone")..tern(mapheaderinfo[i].actnum == 0, "", " "..mapheaderinfo[i].actnum)
-			print(i.."=>"..lvname)
+			--print(i.."=>"..lvname)
 			
 			local gtlist
 			if mapheaderinfo[i]["termcategory1"] then
