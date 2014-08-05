@@ -501,7 +501,7 @@ COM_AddCommand("destroyallenemies", function(p)
 		return
 	end
 	for mobj in thinkers.iterate("mobj") do
-		if ((mobj.valid) and ((mobj.flags & MF_ENEMY) or (mobj.flags & MF_BOSS)) then
+		if ((mobj.valid) and ((mobj.flags & MF_ENEMY) or (mobj.flags & MF_BOSS))) then
 			P_KillMobj(mobj)
 			for player in players.iterate do
 				P_AddPlayerScore(p, 100)
