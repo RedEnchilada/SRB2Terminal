@@ -412,14 +412,19 @@ end)
 
 local function generateFlags(flags)
 	local flagtype = 0
-	if flags:sub(1, 3) == "$1|" then
-		flagtype = $1|EvalMath(flags:upper():sub(4))
-	elseif flags:sub(1, 3) == "$1&" then
-		flagtype = $1&EvalMath(flags:upper():sub(4))
-	elseif flags:sub(1, 4) == "$1^^" then
-		flagtype = $1^^EvalMath(flags:upper():sub(5))
-	else
-		flagtype = EvalMath(flags:upper())
+	local test = pcall(function()
+		if flags:sub(1, 3) == "$1|" then
+			flagtype = $1|EvalMath(flags:upper():sub(4))
+		elseif flags:sub(1, 3) == "$1&" then
+			flagtype = $1&EvalMath(flags:upper():sub(4))
+		elseif flags:sub(1, 4) == "$1^^" then
+			flagtype = $1^^EvalMath(flags:upper():sub(5))
+		else
+			flagtype = EvalMath(flags:upper())
+		end
+	end)
+	if not test then
+		return nil
 	end
 	return flagtype
 end
@@ -438,7 +443,12 @@ Examples: ($1 represents the current value of the flags)
 ]]..yellow..[['SF_FLAG|SF_FLAG2']]..white..[[ will give you only the specified flags.]])
 		return
 	end
-	p.charflags = generateFlags(flags)
+	local test = generateFlags(flags)
+	if test == nil then
+		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		return
+	end
+	p.charflags = test
 end)
 
 -- Mobj flags, useful for screwing around
@@ -453,7 +463,12 @@ COM_AddCommand("mobjflags", function(p, flags)
 		CONS_Printf(p, [[mobjflags <flags>: Change your current mobj flags! You can set multiple flags with the | operator. Flag prefix is MF_, see the 'skinflags' command for examples.]])
 		return
 	end
-	p.mo.flags = generateFlags(flags)
+	local test = generateFlags(flags)
+	if test == nil then
+		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		return
+	end
+	p.mo.flags = test
 end)
 
 -- Mobj flags 2, more stuff to mess around with
@@ -468,7 +483,12 @@ COM_AddCommand("mobjflags2", function(p, flags)
 		CONS_Printf(p, [[mobjflags2 <flags>: Change your current MF2 flags! You can set multiple flags with the | operator. Flag prefix is MF2_, see the 'skinflags' command for examples.]])
 		return
 	end
-	p.mo.flags2 = generateFlags(flags)
+	local test = generateFlags(flags)
+	if test == nil then
+		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		return
+	end
+	p.mo.flags2 = test
 end)
 
 -- Mobj extra flags, you know the drill.
@@ -483,7 +503,12 @@ COM_AddCommand("mobjeflags", function(p, flags)
 		CONS_Printf(p, [[mobjeflags <flags>: Change your current mobj extra flags! You can set multiple flags with the | operator. Flag prefix is MFE_, see the 'skinflags' command for examples.]])
 		return
 	end
-	p.mo.eflags = generateFlags(flags)
+	local test = generateFlags(flags)
+	if test == nil then
+		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		return
+	end
+	p.mo.eflags = test
 end)
 
 
@@ -499,7 +524,12 @@ COM_AddCommand("pflags", function(p, flags)
 		CONS_Printf(p, [[pflags <flags>: Change your current player flags! You can set multiple flags with the | operator. Flag prefix is PF_, see the 'skinflags' command for examples.]])
 		return
 	end
-	p.pflags = generateFlags(flags)
+	local test = generateFlags(flags)
+	if test == nil then
+		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		return
+	end
+	p.pflags = test
 end)
 
 -- Kills all enemies in the map, provided they're actually enemies
