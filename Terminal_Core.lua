@@ -249,7 +249,7 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 	elseif msgtype == 1 then 
 		for player in players.iterate do
 			if player.ctfteam == source.ctfteam then
-				CONS_Printf(player, ">>"..getTermName(source).."<< "..message)
+				CONS_Printf(player, ">>"..getTermName(source).."<< (team) "..message)
 				S_StartSound(nil, sfx_radio, player)
 			end
 		end

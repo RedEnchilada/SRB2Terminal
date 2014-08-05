@@ -6,9 +6,16 @@ local UP_SELFCHEATS = 1
 local UP_OTHERCHEATS = 2
 local UP_GLOBALCHEATS = 4
 
--- Colors used in this file:
+-- Colors:
 
+local white = "\x80" 
+local purple = "\x81" 
 local yellow = "\x82" 
+local green = "\x83" 
+local blue = "\x84" 
+local red = "\x85" 
+local grey = "\x86" 
+local orange = "\x87" 
 
 --SetRings Command
 COM_AddCommand("setrings", function(p, health)
@@ -334,10 +341,6 @@ COM_AddCommand("gravflip", function(p)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	--[[if not p.mo then
-		CONS_Printf(p, "You're dead, stupid.")
-		return 
-	end]]
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	p.mo.flags2 = $1^^MF2_OBJECTFLIP
 end)
@@ -399,6 +402,20 @@ COM_AddCommand("runonwater", function(p)
 	end
 end)
 
+local function generateFlags(flags)
+	local flagtype = 0
+	if flags:sub(1, 3) == "$1|" then
+		flagtype = $1|EvalMath(flags:upper():sub(4))
+	elseif flags:sub(1, 3) == "$1&" then
+		flagtype = $1&EvalMath(flags:upper():sub(4))
+	elseif flags:sub(1, 4) == "$1^^" then
+		flagtype = $1^^EvalMath(flags:upper():sub(5))
+	else
+		flagtype = EvalMath(flags:upper())
+	end
+	return flagtype
+end
+
 -- Skin flags, because why not?
 COM_AddCommand("skinflags", function(p, flags)
 	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
@@ -407,17 +424,13 @@ COM_AddCommand("skinflags", function(p, flags)
 	end
 	if not flags then
 		CONS_Printf(p, [[skinflags <flags>: Change your current skin flags! You can set multiple flags with the | operator. Flag prefix is SF_. 
-Examples:
-]]..yellow..[['$1 |SF_FLAG']]..white..[[ will give you the specified flag. 
-]]..yellow..[['$1 &!SF_FLAG']]..white..[[ will remove the flag.
-]]..yellow..[['SF_FLAG|SF_FLAG2']]..white..[[ will give you all of the specified flags.]])
+Examples: ($1 represents the current value of the flags)
+]]..yellow..[['$1|SF_FLAG']]..white..[[ will add the specified flag. 
+]]..yellow..[['$1&!SF_FLAG']]..white..[[ will remove the flag.
+]]..yellow..[['SF_FLAG|SF_FLAG2']]..white..[[ will give you only the specified flags.]])
 		return
 	end
-	if flags:sub(1, 2) == "$1" then
-		p.charflags = $1..EvalMath(flags:upper():sub(3))
-	else
-		p.charflags = EvalMath(flags:upper())
-	end
+	p.charflags = generateFlags(flags)
 end)
 
 -- Mobj flags, useful for screwing around
@@ -432,11 +445,7 @@ COM_AddCommand("mobjflags", function(p, flags)
 		CONS_Printf(p, [[mobjflags <flags>: Change your current mobj flags! You can set multiple flags with the | operator. Flag prefix is MF_, see the 'skinflags' command for examples.]])
 		return
 	end
-	if flags:sub(1, 2) == "$1" then
-		p.mo.flags = $1..EvalMath(flags:upper():sub(3))
-	else
-		p.mo.flags = EvalMath(flags:upper())
-	end
+	p.mo.flags = generateFlags(flags)
 end)
 
 -- Mobj flags 2, more stuff to mess around with
@@ -451,11 +460,7 @@ COM_AddCommand("mobjflags2", function(p, flags)
 		CONS_Printf(p, [[mobjflags2 <flags>: Change your current MF2 flags! You can set multiple flags with the | operator. Flag prefix is MF2_, see the 'skinflags' command for examples.]])
 		return
 	end
-	if flags:sub(1, 2) == "$1" then
-		p.mo.flags2 = $1..EvalMath(flags:upper():sub(3))
-	else
-		p.mo.flags2 = EvalMath(flags:upper())
-	end
+	p.mo.flags2 = generateFlags(flags)
 end)
 
 -- Mobj extra flags, you know the drill.
@@ -470,12 +475,9 @@ COM_AddCommand("mobjeflags", function(p, flags)
 		CONS_Printf(p, [[mobjeflags <flags>: Change your current mobj extra flags! You can set multiple flags with the | operator. Flag prefix is MFE_, see the 'skinflags' command for examples.]])
 		return
 	end
-	if flags:sub(1, 2) == "$1" then
-		p.mo.eflags = $1..EvalMath(flags:upper():sub(3))
-	else
-		p.mo.eflags = EvalMath(flags:upper())
-	end
+	p.mo.eflags = generateFlags(flags)
 end)
+
 
 -- Player flags, for all kinds of things!
 COM_AddCommand("pflags", function(p, flags)
@@ -486,12 +488,24 @@ COM_AddCommand("pflags", function(p, flags)
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	if not flags then
-		CONS_Printf(p, [[pflags <flags>: Change your current player flags! You can set multiple flags with the | operator. Flag prefix is MF_, see the 'skinflags' command for examples.]])
+		CONS_Printf(p, [[pflags <flags>: Change your current player flags! You can set multiple flags with the | operator. Flag prefix is PF_, see the 'skinflags' command for examples.]])
 		return
 	end
-	if flags:sub(1, 2) == "$1" then
-		p.pflags = $1..EvalMath(flags:upper():sub(3))
-	else
-		p.pflags = EvalMath(flags:upper())
+	p.pflags = generateFlags(flags)
+end)
+
+-- Kills all enemies in the map, provided they're actually enemies
+COM_AddCommand("destroyallenemies", function(p)
+	if not A_MServ_HasPermission(p, UP_GLOBALCHEATS) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		return
+	end
+	for mobj in thinkers.iterate("mobj") do
+		if ((mobj.valid) and ((mobj.flags & MF_ENEMY) or (mobj.flags & MF_BOSS)) then
+			P_KillMobj(mobj)
+			for player in players.iterate do
+				P_AddPlayerScore(p, 100)
+			end
+		end
 	end
 end)
