@@ -148,21 +148,29 @@ addHook("ThinkFrame", do
 	end
 end)
 
-local function R_GetScreenCoords(p, mx, my, mz)
-	-- Get camera angle
-	local camangle = R_PointToAngle(p.mo.x+FixedMul(cos(p.mo.angle), 64<<FRACBITS), p.mo.y+FixedMul(sin(p.mo.angle), 64<<FRACBITS))
-	if twodlevel or (p.mo.flags2 & MF2_TWOD) then
-		camangle = R_PointToAngle(p.mo.x, p.mo.y)
-	end
-	local camheight = p.viewz
-	local camaiming = FixedMul(160<<FRACBITS, tan(p.aiming+ANGLE_90))
-	if(R_PointToDist(p.mo.x, p.mo.y) > FRACUNIT) then
-		camheight = p.tweenedcamz
-		camaiming = p.tweenedaiming/128
-		--print(camheight)
+local function R_GetScreenCoords(p, c, mx, my, mz)
+	local camx, camy, camz, camangle, camaiming
+	if p.awayviewtics then
+		camx = p.awayviewmobj.x
+		camy = p.awayviewmobj.y
+		camz = p.awayviewmobj.z
+		camangle = p.awayviewmobj.angle
+		camaiming = p.awayviewaiming
+	elseif c.chase then
+		camx = c.x
+		camy = c.y
+		camz = c.z
+		camangle = c.angle
+		camaiming = c.aiming
+	else
+		camx = p.mo.x
+		camy = p.mo.y
+		camz = p.mo.z
+		camangle = p.mo.angle
+		camaiming = p.aiming
 	end
 	
-	local x = camangle-R_PointToAngle(mx, my)
+	local x = camangle-R_PointToAngle2(camx, camy, mx, my)
 	local distfact = FixedMul(FRACUNIT, cos(x))
 	if x > ANGLE_90 or x < ANGLE_270 then
 		x = 9999*FRACUNIT
@@ -170,19 +178,19 @@ local function R_GetScreenCoords(p, mx, my, mz)
 		x = FixedMul(tan(x+ANGLE_90), 160<<FRACBITS)+160<<FRACBITS
 	end
 	
-	local y = camheight-mz
+	local y = camz-mz
 	--print(y/FRACUNIT)
-	y = FixedDiv(y, FixedMul(distfact, R_PointToDist(mx, my)))
+	y = FixedDiv(y, FixedMul(distfact, R_PointToDist2(camx, camy, mx, my)))
 	y = (y*160)+100<<FRACBITS
 	y = y+camaiming
 	
-	local scale = FixedDiv(160*FRACUNIT, FixedMul(distfact, R_PointToDist(mx, my)))
+	local scale = FixedDiv(160*FRACUNIT, FixedMul(distfact, R_PointToDist2(camx, camy, mx, my)))
 	--print(scale)
 	
 	return x, y, scale
 end
 
-hud.add(function(v, p)
+hud.add(function(v, p, c)
 	if p.spectator then return end
 	if p.showPOn then
 		local patch = v.cachePatch("CROSHAI1")
@@ -202,7 +210,7 @@ hud.add(function(v, p)
 			end
 		end)(function(player)
 			if not player.mo then return end
-			local x, y = R_GetScreenCoords(p, player.mo.x, player.mo.y, player.mo.z + 20*player.mo.scale)
+			local x, y = R_GetScreenCoords(p, c, player.mo.x, player.mo.y, player.mo.z + 20*player.mo.scale)
 			if x < 0 or x > 320*FRACUNIT or y < 0 or y > 200*FRACUNIT then return end
 			v.drawScaled(x, y, FRACUNIT, patch, V_40TRANS)
 			v.drawString(x/FRACUNIT+2, y/FRACUNIT+2, player.name, V_ALLOWLOWERCASE|V_40TRANS, "left")
