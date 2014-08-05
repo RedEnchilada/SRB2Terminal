@@ -5,7 +5,6 @@ A netplay enhancement mod for SRB2. See http://mb.srb2.org/showthread.php?t=3939
 
 This is considered the "working branch" of Terminal, and may contain errors. Use this version at your own risk. The latest stable version will always be available in the MB release thread, and is the recommended version to use or base changes on.
 
-**This branch has been modified to use functions that are unavailable in the current SRB2 release. Do not attempt to use this for your dedicated servers until 2.1.9 or the next update comes out.**
 
 Instructions
 ============

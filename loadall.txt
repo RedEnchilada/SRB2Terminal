@@ -3,13 +3,9 @@
 addfile Terminal_Core.lua	// The core script. DON'T REMOVE (the other scripts use functions defined here!)
 
 addfile Terminal_Voting.lua	// The voting module. Allows votekick and other similar things.
-addfile Terminal_Maplist.lua	// A dependency of the voting module. Provides a map listing. Replace this with a customized Lua script if you run map addons.
 
 addfile Terminal_Help.lua	// Shows the welcome message, and enables the help commands. (If you'd like to show a custom graphic on player join, add a WAD with a TERMHI graphic lump.)
 
 addfile Terminal_Cheats.lua	// Cheats module. Allows players with cheat permissions to execute certain cheats. If not added, cheat permissions can still be given, though!
 
 addfile Terminal_Login.lua // Login module. Allows players to register accounts and log into them afterwards. Accounts carry permissions with them.
-
-wait 45 // Make sure we're in-game
-iamtheserver // Make it easy on dedicated servers (non-dedicateds will figure out to ignore this command once you get in-game)
