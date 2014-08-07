@@ -135,101 +135,6 @@ COM_AddCommand("devmode", function(p)
 	end
 end)
 
---Player tracking! -Red
-addHook("ThinkFrame", do
-	for player in players.iterate do
-		if player.tweenedaiming then
-			player.tweenedaiming = $1+(player.aiming-$1)/8
-			player.tweenedcamz = $1+(player.viewz+20<<FRACBITS-$1)
-		else
-			player.tweenedaiming = player.aiming
-			player.tweenedcamz = player.viewz+20<<FRACBITS
-		end
-	end
-end)
-
-local function R_GetScreenCoords(p, c, mx, my, mz)
-	local camx, camy, camz, camangle, camaiming
-	if p.awayviewtics then
-		camx = p.awayviewmobj.x
-		camy = p.awayviewmobj.y
-		camz = p.awayviewmobj.z
-		camangle = p.awayviewmobj.angle
-		camaiming = p.awayviewaiming
-	elseif c.chase then
-		camx = c.x
-		camy = c.y
-		camz = c.z
-		camangle = c.angle
-		camaiming = c.aiming
-	else
-		camx = p.mo.x
-		camy = p.mo.y
-		camz = p.mo.z
-		camangle = p.mo.angle
-		camaiming = p.aiming
-	end
-	
-	local x = camangle-R_PointToAngle2(camx, camy, mx, my)
-	local distfact = FixedMul(FRACUNIT, cos(x))
-	if x > ANGLE_90 or x < ANGLE_270 then
-		x = 9999*FRACUNIT
-	else
-		x = FixedMul(tan(x+ANGLE_90), 160<<FRACBITS)+160<<FRACBITS
-	end
-	
-	local y = camz-mz
-	--print(y/FRACUNIT)
-	y = FixedDiv(y, FixedMul(distfact, R_PointToDist2(camx, camy, mx, my)))
-	y = (y*160)+100<<FRACBITS
-	y = y+camaiming
-	
-	local scale = FixedDiv(160*FRACUNIT, FixedMul(distfact, R_PointToDist2(camx, camy, mx, my)))
-	--print(scale)
-	
-	return x, y, scale
-end
-
-hud.add(function(v, p, c)
-	if p.spectator then return end
-	if p.showPOn then
-		local patch = v.cachePatch("CROSHAI1")
-		do (function(func)
-			if G_PlatformGametype() then
-				for player in players.iterate do
-					if player ~= p then
-						func(player)
-					end
-				end
-			elseif G_GametypeHasTeams() then
-				for player in players.iterate do
-					if player ~= p and player.ctfteam == p.ctfteam then
-						func(player)
-					end
-				end
-			end
-		end)(function(player)
-			if not player.mo then return end
-			local x, y = R_GetScreenCoords(p, c, player.mo.x, player.mo.y, player.mo.z + 20*player.mo.scale)
-			if x < 0 or x > 320*FRACUNIT or y < 0 or y > 200*FRACUNIT then return end
-			v.drawScaled(x, y, FRACUNIT, patch, V_40TRANS)
-			v.drawString(x/FRACUNIT+2, y/FRACUNIT+2, player.name, V_ALLOWLOWERCASE|V_40TRANS, "left")
-		end) end
-	end
-end, "game")
-
-COM_AddCommand("showplayers", function(p)
-	if not p.showPOn
-		p.showPOn = true
-		--CONS_Printf(p, "The Eggman Empire is ALWAYS watching its subjects...")
-		CONS_Printf(p, "Player location display enabled.")
-	else 
-		p.showPOn = false
-		--CONS_Printf(p, "Getting these names out of your face.")
-		CONS_Printf(p, "Player location display disabled.")
-	end
-end)
-
 -- Go to another player!
 COM_AddCommand("warpto", function(p, arg1)
 	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
@@ -413,7 +318,7 @@ end)
 local function generateFlags(flags, original)
 	local flagtype = original
 	local test = pcall(function()
-		flags = $1:replace("$1", original)--[[
+		flags = $1:gsub("$1", original)--[[
 		if flags:sub(1, 3) == "$1|" then
 			flagtype = $1|EvalMath(flags:upper():sub(4))
 		elseif flags:sub(1, 3) == "$1&" then
@@ -446,7 +351,7 @@ Examples: ($1 represents the current value of the flags)
 	end
 	local test = generateFlags(flags, p.charflags)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
 		return
 	end
 	p.charflags = test
@@ -466,7 +371,7 @@ COM_AddCommand("mobjflags", function(p, flags)
 	end
 	local test = generateFlags(flags, p.mo.flags)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
 		return
 	end
 	p.mo.flags = test
@@ -486,7 +391,7 @@ COM_AddCommand("mobjflags2", function(p, flags)
 	end
 	local test = generateFlags(flags, p.mo.flags2)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
 		return
 	end
 	p.mo.flags2 = test
@@ -506,7 +411,7 @@ COM_AddCommand("mobjeflags", function(p, flags)
 	end
 	local test = generateFlags(flags, p.mo.eflags)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
 		return
 	end
 	p.mo.eflags = test
@@ -527,7 +432,7 @@ COM_AddCommand("pflags", function(p, flags)
 	end
 	local test = generateFlags(flags, p.pflags)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing"..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
 		return
 	end
 	p.pflags = test
@@ -536,15 +441,26 @@ end)
 -- Kills all enemies in the map, provided they're actually enemies
 COM_AddCommand("destroyallenemies", function(p)
 	if not A_MServ_HasPermission(p, UP_GLOBALCHEATS) then
-		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
+		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
 	end
-	for mobj in thinkers.iterate("mobj") do
-		if ((mobj.valid) and ((mobj.flags & MF_ENEMY) or (mobj.flags & MF_BOSS))) then
-			P_KillMobj(mobj)
-			for player in players.iterate do
-				P_AddPlayerScore(p, 100)
+	for player in players.iterate
+		for mobj in thinkers.iterate("mobj") do
+			if ((mobj.valid) and ((mobj.flags & MF_ENEMY) or (mobj.flags & MF_BOSS))) then
+				P_KillMobj(mobj, player.mo, player.mo)
 			end
 		end
 	end
+end)
+
+--Spawn an object by the power of EvalMath!
+COM_AddCommand("spawnobject", function(p, objecttype)
+	if not A_MServ_HasPermission(p, UP_GLOBALCHEATS) then
+		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
+		return
+	end
+	if not objecttype then CONS_Printf(p, "spawnobject <mobj>: Spawns the corresponding mobj 100 fracunits in front of you!") return end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
+	local call = pcall(do P_SpawnMobj(p.mo.x + 100*FRACUNIT, p.mo.y + 100*FRACUNIT, p.mo.z, EvalMath(objecttype)) end) -- I think this is how you do it?
+	if not call then CONS_Printf(p, "Error occurred while parsing "..yellow..objecttype..white..".") return end
 end)

@@ -5,13 +5,13 @@
 
 -- Colors!
 
-local white = "\x80" 
+local white  = "\x80" 
 local purple = "\x81" 
 local yellow = "\x82" 
-local green = "\x83" 
-local blue = "\x84" 
-local red = "\x85" 
-local grey = "\x86" 
+local green  = "\x83" 
+local blue   = "\x84" 
+local red    = "\x85" 
+local grey   = "\x86" 
 local orange = "\x87" 
 
 -- Permissions used in this file
@@ -54,14 +54,17 @@ local function pollopts()
 	return s.pollopts
 end
 
--- Map list (the function is still global in case other scripts use it)
+-------------------
+-- Maplist stuff --
+-------------------
+
 local function mapoverrides(name)
 	if A_MServ_MapOverride then
 		local f = A_MServ_MapOverride(name) -- Define this function in a separate script if you want to have your own custom overrides
 		if f then return f end
 	end
 	
-	local srb1 = {SRB1 = GT_COOP}
+	local srb1 = {SRB1 = GT_COOP} -- SRB1 is already a manual override!
 	local list = {
 		["Knothole Base Zone 1"] = srb1,
 		["Knothole Base Zone 2"] = srb1,
@@ -96,7 +99,8 @@ local function mapoverrides(name)
 	return list[name]
 end
 
-function A_MServ_GetMapList()
+-- Global maplist function
+function A_MServ_GetMapList() 
 	local maplist = {}
 	
 	local function tern(cond, t, f)
@@ -104,7 +108,7 @@ function A_MServ_GetMapList()
 	end
 	for i = 1, #mapheaderinfo do
 		if mapheaderinfo[i] then
-			local lvname = mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " Zone")..tern(mapheaderinfo[i].actnum == 0, "", " "..mapheaderinfo[i].actnum)
+			local lvname = mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " Zone")..tern(mapheaderinfo[i].actnum == 0, "", " "..mapheaderinfo[i].actnum) -- Really long formula to generate the name string. Auto-capitalizes the first letter of each word.
 			--print(i.."=>"..lvname)
 			
 			local gtlist
@@ -128,7 +132,7 @@ function A_MServ_GetMapList()
 				end
 			else
 				gtlist = mapoverrides(lvname)
-				if not gtlist then
+				if not gtlist then -- Terminal automatically detects maps and assigns them to a category based on their level types.
 					gtlist = {}
 					if (mapheaderinfo[i].typeoflevel & TOL_COOP) then
 						gtlist["Co-op"] = GT_COOP
@@ -141,9 +145,16 @@ function A_MServ_GetMapList()
 						gtlist["Match"] = GT_MATCH
 						gtlist["Team Match"] = GT_TEAMMATCH
 					end
+					if (mapheaderinfo[i].typeoflevel & TOL_TAG) then -- Yes, tag has its own TOL.
+						--gtlist["Tag"] = GT_TAG -- But neither of these gametypes have functional scoring systems, so it looks like we're leaving them commented out.
+						--gtlist["Hide and Seek"] = GT_HIDEANDSEEK
+					end
 					if (mapheaderinfo[i].typeoflevel & TOL_CTF) then
 						gtlist["Capture the Flag"] = GT_CTF
 					end
+					--[[if (mapheaderinfo[i].typeoflevel & TOL_CUSTOM) then -- Custom gametype support!
+						gtlist["Custom"] = GT_GAMETYPE -- Uncomment and give a base gametype to enable
+					end]]
 				end
 			end
 			
@@ -320,7 +331,7 @@ local function startPoll(polltype, arg)
 	A_MServ().voting = poll
 end
 
--- Command to start a poll
+-- Command to start a vote
 COM_AddCommand("startvote", function(p, arg1, ...)
 	if voting() then
 		CONS_Printf(p, "There's already a vote in progress!")
@@ -372,6 +383,7 @@ Available poll types: changemap, changecategory, teamscramble, exitlevel, resetm
 	end
 end)
 
+-- Start a vote using POLL_CUSTOM
 COM_AddCommand("startpoll", function(p, question, ...)
 	if voting() then
 		CONS_Printf(p, "There's already a vote in progress!")
