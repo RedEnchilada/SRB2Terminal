@@ -4,22 +4,15 @@
 
 -- Core file, contains base framework for Terminal functions.
 
--- Helper function for getting a name without the leading permission symbol
-local function cleanName(name)
-	while name:find("^[!&#%%+]") do
-		name = name:sub(2)
-	end
-	return name
-end
 
 -- Helper function for identifying a player
 function A_MServ_getPlayerFromString(src)
 	if tonumber(src) ~= nil then
 		return players[tonumber(src)]
 	else
-		src = cleanName(src):lower()
+		src = src:lower()
 		for player in players.iterate do
-			if cleanName(player.name):lower() == src then return player end
+			if player.name:lower() == src then return player end
 		end
 	end
 end
@@ -63,6 +56,17 @@ local UP_GLOBALCHEATS = 4
 local UP_PLAYERMANAGE = 8
 local UP_GAMEMANAGE = 16
 local UP_FULLCONTROL = 32
+
+-- Colors!
+
+local white  = "\x80" 
+local purple = "\x81" 
+local yellow = "\x82" 
+local green  = "\x83" 
+local blue   = "\x84" 
+local red    = "\x85" 
+local grey   = "\x86" 
+local orange = "\x87" 
 
 -- Can use OR to check for multiple permissions - must have all of them!
 function A_MServ_HasPermission(player, permflags)
@@ -188,67 +192,183 @@ COM_AddCommand("removepermission", function(p, arg1, arg2)
 	end
 end)
 
--- Hack for dedicated servers
-local dediServer
+-- Outdated hack for dedicated servers. Thanks to 2.1.9+, we can point directly to the struct!
+-- local dediServer
 
-COM_AddCommand("iamtheserver", function(p)
+--[[COM_AddCommand("iamtheserver", function(p)
 	if p == server or p == admin then return end -- Dedicated servers only!
 	dediServer = p
 	--COM_BufInsertText(p, "wait 15;wait 15;wait 15;iamtheserver") -- To keep syncing it for players! (lol NetVars hook still being broken)
-end, 1)
+end, 1)]]
 
 function A_MServ()
 	if not netgame then return end -- Just make everything explode in single-player then :v
-	if dediServer and not dediServer.valid then
-		dediServer = nil
-	end
-	return server or dediServer
+	return server or dedicatedserver
 end
 
-addHook("PlayerJoin", do
+-- Deprecated synchronization code
+--[[addHook("PlayerJoin", do
 	if dediServer and dediServer.valid then
 		COM_BufInsertText(dediServer, "wait 1;iamtheserver")
 	end
-end)
+end)]]
+
 
 -- Player symbol management
 local function getSymbol(player)
-	if player == server then return "!" end -- The server already has a symbol next to their name in chat!
+	if player == server then return green.."~"..white end -- Server
 	local p = player.servperm
-	if not p then return nil end
-	if (p & UP_FULLCONTROL) then return "&" end
-	if (p & UP_PLAYERMANAGE) then return "#" end
-	if (p & UP_GAMEMANAGE) then return "%" end
-	if (p & permMap.allcheat) then return "+" end
+	if not p then return "" end -- No permissions! D:
+	if (p & UP_FULLCONTROL) then return green.."&"..white end -- Admin
+	if (p & UP_PLAYERMANAGE) then return green.."@"..white end -- Operator
+	if (p & UP_GAMEMANAGE) then return green.."%"..white end -- Half-Op
+	if (p & permMap.allcheat) then return green.."+"..white end -- Cheater
+end
+
+-- Function for retrieving the current team color
+local function getTeamColor(player) 
+	if G_GametypeHasTeams() then
+		if player.ctfteam == 0 then return white end
+		if player.ctfteam == 1 then return red end 
+		if player.ctfteam == 2 then return blue end 
+	else return ""
+	end
+end
+
+-- Grabs Terminal names, so the PlayerMsg hook below isn't a clustered mess.
+local function getTermName(player) 
+	return getSymbol(player)..getTeamColor(player)..player.name..white
 end
 
 -- Manage player names
-addHook("ThinkFrame", do
-	for p in players.iterate do
-		local name = cleanName(p.name)
-		local sym = getSymbol(p)
-		if sym then
-			name = sym..name
-		end
-		if name ~= p.name then
-			COM_BufInsertText(p, "name \""..name.."\"")
-		end
-		if not p.spectator then
-			if leveltime < 3 and p.rememberspectator then
-				p.spectator = true
-			else
-				p.rememberspectator = false
+addHook("PlayerMsg", function(source, msgtype, target, message)
+	if message:sub(1, 1) == "/" then
+		COM_BufInsertText(source, message:sub(2))
+		return true
+	end
+	if msgtype == 0 then 
+		print("<"..getTermName(source).."> "..message)
+		S_StartSound(nil, sfx_radio)
+	elseif msgtype == 1 then 
+		for player in players.iterate do
+			if player.ctfteam == source.ctfteam then
+				CONS_Printf(player, ">>"..getTermName(source).."<< (team) "..message)
+				S_StartSound(nil, sfx_radio, player)
 			end
+		end
+	elseif msgtype == 2 then 
+		CONS_Printf(source, "->*"..getTermName(target).."* "..message)
+		CONS_Printf(target, "*"..getTermName(source).."* "..message)
+		S_StartSound(nil, sfx_radio, source)
+		S_StartSound(nil, sfx_radio, target)
+	end
+	if msgtype ~= 3
+		return true
+	end
+end)
+-- Spectate yourself!
+COM_AddCommand("spectate", function(player)
+	player.rememberspectator = true
+	if not player.spectator == true then
+		player.spectator = true
+		print(player.name.." became a spectator.")
+	end
+end)
+
+--Player tracking! -Red
+addHook("ThinkFrame", do
+	for player in players.iterate do
+		if player.tweenedaiming then
+			player.tweenedaiming = $1+(player.aiming-$1)/8
+			player.tweenedcamz = $1+(player.viewz+20<<FRACBITS-$1)
+		else
+			player.tweenedaiming = player.aiming
+			player.tweenedcamz = player.viewz+20<<FRACBITS
 		end
 	end
 end)
 
--- Spectate yourself!
-COM_AddCommand("spectate", function(player)
-	player.rememberspectator = true
-	if not player.spectator == true
-		player.spectator = true
-		print(player.name.." became a spectator.")
+local function R_GetScreenCoords(p, c, mx, my, mz)
+	local camx, camy, camz, camangle, camaiming
+	if p.awayviewtics then
+		camx = p.awayviewmobj.x
+		camy = p.awayviewmobj.y
+		camz = p.awayviewmobj.z
+		camangle = p.awayviewmobj.angle
+		camaiming = p.awayviewaiming
+	elseif c.chase then
+		camx = c.x
+		camy = c.y
+		camz = c.z
+		camangle = c.angle
+		camaiming = c.aiming
+	else
+		camx = p.mo.x
+		camy = p.mo.y
+		camz = p.mo.z
+		camangle = p.mo.angle
+		camaiming = p.aiming
+	end
+	
+	local x = camangle-R_PointToAngle2(camx, camy, mx, my)
+	local distfact = FixedMul(FRACUNIT, cos(x))
+	if x > ANGLE_90 or x < ANGLE_270 then
+		x = 9999*FRACUNIT
+	else
+		x = FixedMul(tan(x+ANGLE_90), 160<<FRACBITS)+160<<FRACBITS
+	end
+	
+	local y = camz-mz
+	--print(y/FRACUNIT)
+	y = FixedDiv(y, FixedMul(distfact, R_PointToDist2(camx, camy, mx, my)))
+	y = (y*160)+100<<FRACBITS
+	y = y+camaiming
+	
+	local scale = FixedDiv(160*FRACUNIT, FixedMul(distfact, R_PointToDist2(camx, camy, mx, my)))
+	--print(scale)
+	
+	return x, y, scale
+end
+
+-- Complicated shit that Wolfy will never understand
+hud.add(function(v, p, c)
+	if p.spectator then return end
+	if p.showPOn then
+		local patch = v.cachePatch("CROSHAI1")
+		do (function(func)
+			if G_PlatformGametype() then
+				for player in players.iterate do
+					if player ~= p then
+						func(player)
+					end
+				end
+			elseif G_GametypeHasTeams() then
+				for player in players.iterate do
+					if player ~= p and player.ctfteam == p.ctfteam then
+						func(player)
+					end
+				end
+			end
+		end)(function(player)
+			if not player.mo then return end
+			local x, y = R_GetScreenCoords(p, c, player.mo.x, player.mo.y, player.mo.z + 20*player.mo.scale)
+			if x < 0 or x > 320*FRACUNIT or y < 0 or y > 200*FRACUNIT then return end
+			v.drawScaled(x, y, FRACUNIT, patch, V_40TRANS)
+			v.drawString(x/FRACUNIT+2, y/FRACUNIT+2, player.name, V_ALLOWLOWERCASE|V_40TRANS, "left")
+		end) end
+	end
+end, "game")
+
+-- Previously part of Terminal_Cheats. Showplayers is awesome though, so it's in Core now.
+COM_AddCommand("showplayers", function(p)
+	if not p.showPOn
+		p.showPOn = true
+		--CONS_Printf(p, "The Eggman Empire is ALWAYS watching its subjects...")
+		CONS_Printf(p, "Player location display enabled.")
+	else 
+		p.showPOn = false
+		--CONS_Printf(p, "Getting these names out of your face.")
+		CONS_Printf(p, "Player location display disabled.")
 	end
 end)
 
@@ -285,7 +405,7 @@ COM_AddCommand("kill", function(p, arg1)
 		return
 	end
 	if arg1 == nil then
-		CONS_Printf(p, "kill <player>: Stub somebody's toe!")
+		CONS_Printf(p, "kill <player>: Kill another player!")
 		return
 	end
 	local player = A_MServ_getPlayerFromString(arg1)
@@ -315,7 +435,7 @@ COM_AddCommand("dokick", function(p, arg1, ...)
 		return
 	end
 	
-	if A_MServ_HasPermission(player, UP_FULLCONTROL) not A_MServ_HasPermission(p, UP_FULLCONTROL) then
+	if A_MServ_HasPermission(player, UP_FULLCONTROL) and not A_MServ_HasPermission(p, UP_FULLCONTROL) then
 		CONS_Printf(p, "Only admins can kick or ban other admins.")
 		return
 	end
@@ -331,6 +451,8 @@ COM_AddCommand("dokick", function(p, arg1, ...)
 	
 	COM_BufInsertText(A_MServ(), cmd)
 end)
+
+-- SRB2 seriously needs a super() function for replaced commands.
 COM_AddCommand("doban", function(p, arg1, ...)
 	if not A_MServ_HasPermission(p, UP_PLAYERMANAGE) then
 		CONS_Printf(p, "You need \"moderator\" permissions to use this!")
@@ -346,7 +468,7 @@ COM_AddCommand("doban", function(p, arg1, ...)
 		return
 	end
 	
-	if A_MServ_HasPermission(player, UP_FULLCONTROL) not A_MServ_HasPermission(p, UP_FULLCONTROL) then
+	if A_MServ_HasPermission(player, UP_FULLCONTROL) and not A_MServ_HasPermission(p, UP_FULLCONTROL) then
 		CONS_Printf(p, "Only admins can kick or ban other admins.")
 		return
 	end
@@ -395,9 +517,108 @@ COM_AddCommand("do", function(p, ...)
 		end
 	end -- You could theoretically remove the leading space from cmd, but it doesn't actually affect the execution, so let's not. :)
 	--print(cmd)
-	CONS_Printf(p, "Executing\x82"..cmd.."\x80 in the server console.")
-	CONS_Printf(A_MServ(), "\x82"..p.name.." executed the following in the server console: \x84>"..cmd)
+	CONS_Printf(p, "Executing"..yellow..cmd..white.." in the server console.")
+	CONS_Printf(A_MServ(), yellow..p.name.." executed the following in the server console: "..blue..">"..cmd)
 	COM_BufInsertText(A_MServ(), cmd)
+end)
+
+-------------------
+-- Terminal Help --
+-------------------
+
+addHook("ThinkFrame", do
+	for p in players.iterate do
+		p.serverlogintime = ($1 or 0)+1
+	end
+end)
+
+-- Alias for splash screen graphics
+local function welcomeDraw(v, patch, trans)
+	v.drawScaled(0, 0, FRACUNIT/2, patch, trans)
+end
+
+-- Draws the server's custom splash screen if you've just joined
+hud.add(function(v, p)
+	if (not p.serverlogintime) or p.serverlogintime < 10*TICRATE then
+		local customgraphics = false
+		
+		if v.patchExists("TERMHI3") then -- Enable custom greeting graphics, at a resolution of 640x400
+			welcomeDraw(v, v.cachePatch("TERMHI3"), V_60TRANS) -- 60% transparency
+			customgraphics = true
+		end
+		
+		if v.patchExists("TERMHI2") then -- Enable custom greeting graphics, at a resolution of 640x400
+			welcomeDraw(v, v.cachePatch("TERMHI2"), V_30TRANS) -- 30% transparency
+			customgraphics = true
+		end
+		
+		if v.patchExists("TERMHI") then -- Enable custom greeting graphics, at a resolution of 640x400
+			welcomeDraw(v, v.cachePatch("TERMHI"), 0) -- No transparency
+			customgraphics = true
+		end
+		
+		if not customgraphics then -- Fallback if you have no sick graphics
+			v.drawString(20, 60, "Welcome to the LightDash.org SRB2 server!\n\n\n\n\n\n\nType \"term_help\" in the console to\nlearn more about this server.", V_ALLOWLOWERCASE, "left")
+		end
+	end
+end, "game")
+
+-- Display help information
+COM_AddCommand("term_help", function(p, arg1)
+	local disp = [[Welcome to LightDash.org's SRB2 server, powered by Terminal!
+This mod for SRB2 servers adds lots of additional functionality to improve the netplay experience, such as votes for map changing or kicking obnoxious players, a brand-new permissions system, and optional multiplayer cheats!
+
+To learn more, type "term_help <topic>". The following topics are available:
+logins, polls, permissions, credits]]
+	
+	local helpindex = {
+		logins = [[Terminal provides a login system for account registration. Logging in will allow you to keep permissions given to you by the server. (For more info about permissions, type "term_help permissions" in the console.)
+
+To register an account, type "register <password>" into the console. The server admin will have to complete the registration process. Once this is done, you can type "login [<username>] <password>" to log into your account. (username is the name you registered with, and will default to your current username if not given.)]],
+		polls = [[Terminal has support for polls of many types, including functional polls to change the current map. For more information on how to start a poll, type "startvote" in the console.
+
+To vote in a currently active poll, type "vote <option>" in the console. (option must be the number of your choice, not the choice itself.) Managers can also force polls to end by typing "resolvepoll" in the console, or "removepoll" to end without executing the results of the poll.]],
+		permissions = [[SRB2's old permission system is out. Terminal's new permission system is in! This permission system allows the server to give different permissions to different users, and have multiple permissions at a time.
+
+The "givepermission" and "removepermission" commands are used to set permissions. More info about each permission:
+cheatself (+): Players can use cheats that affect themselves, such as "god" and "noclip".
+]]-- cheatothers: Players can use cheats that affect other players. (These are not yet implemented.)
+..[[cheatall (+): Players can use cheats that affect the entire server, such as "setrings".
+allcheat (+): Players get all of the above permissions.
+moderator (@): Players can kick and ban others from the game, using the "dokick" and "doban" commands.
+halfop (%): Players can change the game map and change other options.
+operator (@): Players get moderator and halfop permissions.
+admin (&): Players can execute any command from the server's end using the "do" command.]],
+
+		credits = [[Terminal development credits:
+
+Script development:
+  RedEnchilada
+  Wolfy
+
+]]--[[Supplementary executable development: -- Hasn't happened yet, leaving out for now
+  LightningDragon96
+  SonicFreak94]]
+
+..[[Server testing assistance:
+  Steel Titanium
+
+Testers:
+  Blue Warrior, CoatRack, Iceman404,
+  Puppyfaic, SeventhSentinel, Sonict,
+  SonicX8000, Katmint
+
+The latest vanilla release can always be found at http://terminal.lightdash.org/!]]
+-- Do not remove these credits. Uncomment the below line if you've modified Terminal and wish to state this.
+		..[[
+		Modifications for this server:
+		  Wolfy]]
+	}
+	
+	if helpindex[arg1] then
+		disp = helpindex[arg1]
+	end
+	CONS_Printf(p, disp)
 end)
 
 -- Show that Terminal is being run on the scores screen!
