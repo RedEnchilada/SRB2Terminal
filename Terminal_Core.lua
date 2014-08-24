@@ -18,7 +18,7 @@ function A_MServ_getPlayerFromString(src)
 end
 
 -- Function to turn a decimal number string into a fixed! (Wrote my own so we don't need to ask JTE for his c: -Red)
-function A_MServ_floatFixed(src)
+function A_MServ_floatFixed(src) -- TODO: Rewrite certain bits under EvalMath
 	if src == nil then return nil end
 	if not src:find("^-?%d+%.%d+$") then -- Not a valid number!
 		--print("FAK U THIS NUMBER IS SHITE")
@@ -50,12 +50,12 @@ COM_AddCommand("getfixed", function(p, a)
 end)]]
 
 -- Permissions system! -Red
-local UP_SELFCHEATS = 1
-local UP_OTHERCHEATS = 2
+local UP_SELFCHEATS   = 1
+local UP_OTHERCHEATS  = 2
 local UP_GLOBALCHEATS = 4
 local UP_PLAYERMANAGE = 8
-local UP_GAMEMANAGE = 16
-local UP_FULLCONTROL = 32
+local UP_GAMEMANAGE   = 16
+local UP_FULLCONTROL  = 32
 
 -- Colors!
 
@@ -93,15 +93,15 @@ end
 
 -- Raw console commands for permissions
 local permMap = {
-	cheatself = UP_SELFCHEATS,
-	--cheatothers = UP_OTHERCHEATS,
-	cheatglobal = UP_GLOBALCHEATS,
-	allcheat = UP_SELFCHEATS|UP_OTHERCHEATS|UP_GLOBALCHEATS,
-	moderator = UP_PLAYERMANAGE,
-	halfop = UP_GAMEMANAGE,
-	operator = UP_PLAYERMANAGE|UP_GAMEMANAGE,
-	admin = UP_FULLCONTROL,
-	all = ~0 -- EVERYTHING! MWAHAHA
+	cheatself     = UP_SELFCHEATS,
+	--cheatothers   = UP_OTHERCHEATS,
+	cheatglobal   = UP_GLOBALCHEATS,
+	allcheat      = UP_SELFCHEATS|UP_OTHERCHEATS|UP_GLOBALCHEATS,
+	moderator     = UP_PLAYERMANAGE,
+	halfop        = UP_GAMEMANAGE,
+	operator      = UP_PLAYERMANAGE|UP_GAMEMANAGE,
+	admin         = UP_FULLCONTROL,
+	all           = ~0 -- EVERYTHING! MWAHAHA
 }
 
 COM_AddCommand("givepermission", function(p, arg1, arg2)
@@ -202,7 +202,7 @@ end)
 end, 1)]]
 
 function A_MServ()
-	if not netgame then return end -- Just make everything explode in single-player then :v
+	if not netgame then return server end -- Should work properly in SP since this is here
 	return server or dedicatedserver
 end
 
@@ -240,7 +240,7 @@ local function getTermName(player)
 	return getSymbol(player)..getTeamColor(player)..player.name..white
 end
 
--- Manage player names
+-- Manage player names - Wolfs
 addHook("PlayerMsg", function(source, msgtype, target, message)
 	if message:sub(1, 1) == "/" then
 		COM_BufInsertText(source, message:sub(2))
@@ -526,6 +526,7 @@ end)
 -- Terminal Help --
 -------------------
 
+-- Keeps track of how long the player has been on the server
 addHook("ThinkFrame", do
 	for p in players.iterate do
 		p.serverlogintime = ($1 or 0)+1

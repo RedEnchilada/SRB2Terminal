@@ -2,20 +2,22 @@
 -- Optional file. Meant to screw with the game! (Requires Terminal_Core.lua)
 
 -- Permissions used in this file
-local UP_SELFCHEATS = 1
-local UP_OTHERCHEATS = 2
+local UP_SELFCHEATS   = 1
+local UP_OTHERCHEATS  = 2
 local UP_GLOBALCHEATS = 4
 
 -- Colors:
 
-local white = "\x80" 
+local white  = "\x80" 
 local purple = "\x81" 
 local yellow = "\x82" 
-local green = "\x83" 
-local blue = "\x84" 
-local red = "\x85" 
-local grey = "\x86" 
+local green  = "\x83" 
+local blue   = "\x84" 
+local red    = "\x85" 
+local grey   = "\x86" 
 local orange = "\x87" 
+
+-- If it's a cheat in vanilla, it's here. If it isn't, it's probably anyways.
 
 --SetRings Command
 COM_AddCommand("setrings", function(p, health)
@@ -121,6 +123,7 @@ hud.add(function(v, player)
 	end
 end, "game")
 
+-- TODO: Add actual devmode things to devmode
 COM_AddCommand("devmode", function(p)
 	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
@@ -315,6 +318,7 @@ COM_AddCommand("runonwater", function(p)
 	end
 end)
 
+-- Template function for evaluating psuedo variables in flag strings
 local function generateFlags(flags, original)
 	local flagtype = original
 	local test = pcall(function()
