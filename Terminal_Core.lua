@@ -442,7 +442,7 @@ COM_AddCommand("dokick", function(p, arg1, ...)
 	
 	local cmd = ("kick %s <%s>"):format(#player, p.name)
 	for _,i in ipairs({...}) do
-		if i:find(" ")
+		if i:find(" ") or i:find(";") then
 			cmd = $1..' "'..i..'"'
 		else
 			cmd = $1.." "..i
@@ -475,7 +475,7 @@ COM_AddCommand("doban", function(p, arg1, ...)
 	
 	local cmd = ("ban %s <%s>"):format(#player, p.name)
 	for _,i in ipairs({...}) do
-		if i:find(" ")
+		if i:find(" ") or i:find(";") then
 			cmd = $1..' "'..i..'"'
 		else
 			cmd = $1.." "..i
@@ -510,7 +510,7 @@ COM_AddCommand("do", function(p, ...)
 	
 	local cmd = ""
 	for _,i in ipairs({...}) do
-		if i:find(" ")
+		if i:find(" ") or i:find(";") then
 			cmd = $1..' "'..i..'"'
 		else
 			cmd = $1.." "..i
