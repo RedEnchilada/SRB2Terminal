@@ -203,7 +203,7 @@ end, 1)]]
 
 function A_MServ()
 	if not netgame then return server end -- Should work properly in SP since this is here
-	return server or dedicatedserver
+	if server then return server else return dedicatedserver end
 end
 
 -- Deprecated synchronization code
