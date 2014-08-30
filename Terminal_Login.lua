@@ -1,6 +1,16 @@
 -- Terminal Logins - LightDash edition:
 -- Optional file. Handles logins and registration. (Requires Terminal_Core.lua)
 
+-- Colors:
+
+local white  = "\x80" 
+local purple = "\x81" 
+local yellow = "\x82" 
+local green  = "\x83" 
+local blue   = "\x84" 
+local red    = "\x85" 
+local grey   = "\x86" 
+local orange = "\x87" 
 
 --local logPasses = {} -- name = {hash, perms},
 
@@ -62,7 +72,7 @@ COM_AddCommand("login", function(p, arg1, arg2)
 	
 	if not (passes[name] and passes[name][1] == pass) then
 		CONS_Printf(A_MServ(), p.name.." tried unsuccessfully to log in.")
-		CONS_Printf(p, "\x82Login incorrect.\x80")
+		CONS_Printf(p, yellow.."Login incorrect."..white)
 		return
 	end
 	
@@ -132,11 +142,11 @@ COM_AddCommand("register", function(p, pass)
 %sMSERV_REGISTER:%s %s
 Add the following to "term_logins.txt" to complete this user's registration:
 loadhash "%s" %s %s
-]]):format("\x82", "\x80", name, name, pass, p.servperm))
+]]):format(yellow, white, name, name, pass, p.servperm))
 	if updatingpass then
 		CONS_Printf(p, "Your password has been changed.")
 	else
-		CONS_Printf(p, "Your username has been registered. Use the \x82login\x80 command to log into it in the future!")
+		CONS_Printf(p, "Your username has been registered. Use the "..yellow.."login"..white.." command to log into it in the future!")
 		print(p.name .. " has registered on this server.")
 	end
 	p.nickservname = name
@@ -144,7 +154,7 @@ end)
 
 -- Overriding "verify" and "password" to lock out the old vanilla verification system - it'll just cause confusion!
 local function noOldAuth(p)
-	CONS_Printf(p, "\x82verify\x80 and \x82password\x80 have been removed, dude. Type \x82term_help logins\x80 for more information about the new authentication system in place!")
+	CONS_Printf(p, yellow.."verify"..white.." and "..yellow.."password"..white.." are out. Type "..yellow.."term_help logins"..white.." for more information about the new authentication system in place!")
 end
 COM_AddCommand("verify", noOldAuth)
 COM_AddCommand("password", noOldAuth)
@@ -152,7 +162,7 @@ COM_AddCommand("password", noOldAuth)
 
 
 -- Name protection, NickServ-style!
-local function nickservopts()
+local function nickservopts() -- TODO: NickServ Ghost-style reclamation
 	local s = A_MServ()
 	if not s then return end -- ABORT ABORT ADJGDFSOIHHO
 	if not s.nickservopts then
@@ -219,5 +229,5 @@ COM_AddCommand("defaultname", function(p, val)
 	end
 	local o = nickservopts()
 	o.default = val
-	CONS_Printf(p, ("Default name changed to %s."):format(val))
+	CONS_Printf(p, ("Default guest name changed to %s."):format(val))
 end)

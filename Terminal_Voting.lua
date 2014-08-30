@@ -15,7 +15,7 @@ local grey   = "\x86"
 local orange = "\x87" 
 
 -- Permissions used in this file
-local UP_GAMEMANAGE = 16
+local UP_GAMEMANAGE  = 16
 local UP_FULLCONTROL = 32
 -- Don't copy-pastarino the above!
 
@@ -33,15 +33,15 @@ end
 -- In case of POLL_KICK, a second arg with the player you wish to kick
 -- In case of POLL_CUSTOM, the second arg is a table in the format {question="Blah blah?", answers={"Blah!", "Blah..."}}
 -- In case of POLL_PLAYERS, the second arg is the question (answers will be populated with player names at the time of the poll's creation)
-local POLL_CHANGEMAP = 1
+local POLL_CHANGEMAP      = 1
 local POLL_CHANGECATEGORY = 2
-local POLL_TEAMSCRAMBLE = 3
-local POLL_ENDMAP = 4
-local POLL_KICK = 5
-local POLL_CUSTOM = 6
-local POLL_PLAYERS = 7
-local POLL_RESETMAP = 8
-local POLL_START = 256
+local POLL_TEAMSCRAMBLE   = 3
+local POLL_ENDMAP         = 4
+local POLL_KICK           = 5
+local POLL_CUSTOM         = 6
+local POLL_PLAYERS        = 7
+local POLL_RESETMAP       = 8
+local POLL_START          = 256
 
 local function pollopts()
 	local s = A_MServ()
@@ -66,35 +66,35 @@ local function mapoverrides(name)
 	
 	local srb1 = {SRB1 = GT_COOP} -- SRB1 is already a manual override!
 	local list = {
-		["Knothole Base Zone 1"] = srb1,
-		["Knothole Base Zone 2"] = srb1,
-		["Great Forest Zone 1"] = srb1,
-		["Great Forest Zone 2"] = srb1,
-		["Lake Zone 1"] = srb1,
-		["Lake Zone 2"] = srb1,
-		["Ice Palace Zone 1"] = srb1,
-		["Ice Palace Zone 2"] = srb1,
-		["Volcano Zone 1"] = srb1,
-		["Volcano Zone 2"] = srb1,
-		["Echidnapolis Zone 1"] = srb1,
-		["Echidnapolis Zone 2"] = srb1,
-		["Sky Lab Zone 1"] = srb1,
-		["Sky Lab Zone 2"] = srb1,
+		["Knothole Base Zone 1"]      = srb1,
+		["Knothole Base Zone 2"]      = srb1,
+		["Great Forest Zone 1"]       = srb1,
+		["Great Forest Zone 2"]       = srb1,
+		["Lake Zone 1"]               = srb1,
+		["Lake Zone 2"]               = srb1,
+		["Ice Palace Zone 1"]         = srb1,
+		["Ice Palace Zone 2"]         = srb1,
+		["Volcano Zone 1"]            = srb1,
+		["Volcano Zone 2"]            = srb1,
+		["Echidnapolis Zone 1"]       = srb1,
+		["Echidnapolis Zone 2"]       = srb1,
+		["Sky Lab Zone 1"]            = srb1,
+		["Sky Lab Zone 2"]            = srb1,
 		["Mechanical Madness Zone 1"] = srb1,
 		["Mechanical Madness Zone 2"] = srb1,
-		["Robotopolis Zone 1"] = srb1,
-		["Robotopolis Zone 2"] = srb1,
-		["Robo Base Zone 1"] = srb1,
-		["Robo Base Zone 2"] = srb1,
-		["Ringsatellite Zone 1"] = srb1,
-		["Ringsatellite Zone 2"] = srb1,
-		["Athenos Zone"] = srb1,
-		["Great Unknown Zone"] = srb1,
-		["Void Zone"] = srb1,
-		["Woodland Hill Zone"] = srb1,
-		["Rocky Mountain Zone"] = srb1,
-		["Hidden Palace Zone"] = srb1
-	}
+		["Robotopolis Zone 1"]        = srb1,
+		["Robotopolis Zone 2"]        = srb1,
+		["Robo Base Zone 1"]          = srb1,
+		["Robo Base Zone 2"]          = srb1,
+		["Ringsatellite Zone 1"]      = srb1,
+		["Ringsatellite Zone 2"]      = srb1,
+		["Athenos Zone"]              = srb1,
+		["Great Unknown Zone"]        = srb1,
+		["Void Zone"]                 = srb1,
+		["Woodland Hill Zone"]        = srb1,
+		["Rocky Mountain Zone"]       = srb1,
+		["Hidden Palace Zone"]        = srb1
+	} -- No, I don't space all this shit out manually, I have a plugin that lets me auto-align these. - Wolfs
 	
 	return list[name]
 end
@@ -103,6 +103,7 @@ end
 function A_MServ_GetMapList() 
 	local maplist = {}
 	
+	-- Simple function for checking and deciding on conditions on the fly
 	local function tern(cond, t, f)
    		if cond return t else return f end
 	end
@@ -200,7 +201,7 @@ local function getMapChangePoll(poll, polltype)
 		
 		-- Branch poll types
 		if polltype == POLL_CHANGECATEGORY then
-			poll.question = "Change to which gametype?"
+			poll.question = "Change to which gametype?" -- TODO: Category changes shouldn't use a default map, they should start a vote for a specific map too
 			for category,v in pairs(maplist) do
 				if category == currentcategory then continue end
 				local defaultmap = v[3]
@@ -324,7 +325,7 @@ local function startPoll(polltype, arg)
 			table.insert(poll.answers, p.name)
 		end
 		poll.done = function(poll, winner)
-			print(("\x82%s %s!"):format(poll.question, poll.answers[winner]))
+			print((yellow.."%s %s!"):format(poll.question, poll.answers[winner]))
 		end
 	end
 	
@@ -390,7 +391,7 @@ COM_AddCommand("startpoll", function(p, question, ...)
 		return
 	end
 	if p.polltimeout and not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
-		CONS_Printf("You've already made a poll recently! Wait a bit.")
+		CONS_Printf(p, "You've already made a poll recently! Wait a bit.")
 		return
 	end
 	if not question then
@@ -446,7 +447,7 @@ COM_AddCommand("vote", function(p, opt)
 		return
 	end
 	poll.votes[#p] = opt
-	CONS_Printf(p, ("Voted for \x82%s\x80."):format(poll.answers[opt]))
+	CONS_Printf(p, ("Voted for "..yellow.."%s"..white.."."):format(poll.answers[opt]))
 end)
 
 -- Resolve poll
@@ -468,7 +469,7 @@ local function resolvePoll(force)
 		return
 	end
 	if #winners > 1 then
-		if not force then return end -- Give ties a chance to resolve if the time isn't up
+		if not force then return end 
 		winners = {poll.tiebreaker(unpack(winners))}
 	end
 	winners = winners[1]
