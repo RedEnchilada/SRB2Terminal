@@ -1,27 +1,13 @@
 -- Terminal Cheats:
 -- Optional file. Meant to screw with the game! (Requires Terminal_Core.lua)
 
--- Permissions used in this file
-local UP_SELFCHEATS   = 1
-local UP_OTHERCHEATS  = 2
-local UP_GLOBALCHEATS = 4
-
--- Colors:
-
-local white  = "\x80" 
-local purple = "\x81" 
-local yellow = "\x82" 
-local green  = "\x83" 
-local blue   = "\x84" 
-local red    = "\x85" 
-local grey   = "\x86" 
-local orange = "\x87" 
+if not terminal then error("the Terminal core script must be added first!") end
 
 -- If it's a cheat in vanilla, it's here. If it isn't, it probably is anyways.
 
 --SetRings Command
 COM_AddCommand("setrings", function(p, health)
-	if not A_MServ_HasPermission(p, UP_GLOBALCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatglobal) then
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
 	end
@@ -33,7 +19,7 @@ COM_AddCommand("setrings", function(p, health)
 		health = nil
 	end
 	if health == nil
-		CONS_Printf(p, "setrings <number of rings>: Sets the player's rings to a specific number.")
+		CONS_Printf(p, "setrings <number of rings>: Sets everyone's rings to a specific number.")
 		return
 	end
 	for player in players.iterate
@@ -46,7 +32,7 @@ end)
 
 --SetLives Command
 COM_AddCommand("setlives", function(p, lives)
-	if not A_MServ_HasPermission(p, UP_GLOBALCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatglobal) then
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
 	end
@@ -69,36 +55,32 @@ end)
 
 --God Command
 COM_AddCommand("god", function(player)
-	if not A_MServ_HasPermission(player, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
 	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
 	if not (player.pflags & PF_GODMODE)
 		player.pflags = $1|PF_GODMODE
-		--CONS_Printf(player, "Skybase mode enabled.")
 		CONS_Printf(player, "Sissy mode enabled.")
 	else 
 		player.pflags = $1 & ~PF_GODMODE
-		--CONS_Printf(player, "Skybase mode disabled.")
 		CONS_Printf(player, "Sissy mode disabled.")
 	end
 end)
 
 --NoClip Command
 COM_AddCommand("noclip", function(player)
-	if not A_MServ_HasPermission(player, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
 	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
 	if not (player.pflags & PF_NOCLIP)
 		player.pflags = $1|PF_NOCLIP
-		--CONS_Printf(player, "<BlueCore> Walls arent used in good level design.")
 		CONS_Printf(player, "NoClip enabled.")
 	else 
 		player.pflags = $1 & ~PF_NOCLIP
-		--CONS_Printf(player, "*Mystic has kicked BlueCore from #srb2fun (There are a lot of things you are not understanding, and this is one of them.)")
 		CONS_Printf(player, "NoClip disabled.")
 	end
 end)
@@ -126,7 +108,7 @@ end, "game")
 
 -- TODO: Add actual devmode things to devmode
 COM_AddCommand("devmode", function(p)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -141,7 +123,7 @@ end)
 
 -- Go to another player!
 COM_AddCommand("warpto", function(p, arg1)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -150,7 +132,7 @@ COM_AddCommand("warpto", function(p, arg1)
 		CONS_Printf(p, "warpto <player>: Warp to another player's location!")
 		return
 	end
-	local player = A_MServ_getPlayerFromString(arg1)
+	local player = terminal.GetPlayerFromString(arg1)
 	if not player then
 		CONS_Printf(p, "Player "..arg1.." does not exist!")
 		return
@@ -176,7 +158,7 @@ end)
 
 -- Gain overpowered qualities!
 COM_AddCommand("getallemeralds", function(player)
-	if not A_MServ_HasPermission(player, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -187,12 +169,12 @@ end)
 
 -- Change your scale
 COM_AddCommand("scale", function(p, scale)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
-	local nScale = A_MServ_floatFixed(scale)
+	local nScale = terminal.FloatFixed(scale)
 	if not nScale then
 		CONS_Printf(p, "scale <number>: Make yourself bigger or smaller!")
 		return
@@ -203,7 +185,7 @@ end)
 
 -- Change your character's ability!
 COM_AddCommand("charability", function(player, arg1)
-	if not A_MServ_HasPermission(player, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -220,12 +202,12 @@ end)
 
 -- Can't forget ability2!
 COM_AddCommand("charability2", function(player, arg1)
-	if not A_MServ_HasPermission(player, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
 	if not arg1 then
-		CONS_Printf(player, "charability2 <ability>: Change your secondary ability! Accepts CA_ arguments or numbers.")
+		CONS_Printf(player, "charability2 <ability>: Change your secondary ability! Accepts CA2_ arguments or numbers.")
 		return
 	end
 	if arg1 == "default" then
@@ -237,7 +219,7 @@ end)
 
 -- ActionSpeed, for science.
 COM_AddCommand("actionspd", function(player, arg1)
-	if not A_MServ_HasPermission(player, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -248,13 +230,13 @@ COM_AddCommand("actionspd", function(player, arg1)
 	if arg1 == "default" then
 		player.actionspd = skins[player.mo.skin].actionspd
 	else
-		player.actionspd = (tonumber(arg1))*FRACUNIT
+		player.actionspd = terminal.FloatFixed(arg1)
 	end
 end)
 
 -- On-demand gravity flip! Whee~
 COM_AddCommand("gravflip", function(p)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -264,7 +246,7 @@ end)
 
 -- Summon a shield to aid your quest!
 COM_AddCommand("giveshield", function(p, shield)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -306,7 +288,7 @@ end)
 
 -- By the power of 2.1.9, RunOnWater!
 COM_AddCommand("runonwater", function(p)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -318,6 +300,21 @@ COM_AddCommand("runonwater", function(p)
 		CONS_Printf(p, "Water running disabled.")
 	end
 end)
+
+-- Help listing
+terminal.AddHelp("cheats",
+[[The Terminal cheats module provides various console commands to mess with the game with! Most of the commands need either "cheatself" or "cheatglobal" permissions.
+
+Some useful commands:
+  god, noclip, devmode: Same (or similar) functions as in the full game.
+  showplayers: Toggles drawing crosshairs pointing at every friendly player in the game.
+  warpto: Teleport to another player.
+  giveshield: Get a shield.
+  setrings, setlives: Self-explanatory.
+
+More commands are available, too.]])
+
+-- BREAKING NEWS: WOLFY ADDS USELESS SILLY THINGS -Red
 
 -- Template function for evaluating psuedo variables in flag strings
 local function generateFlags(flags, original)
@@ -342,21 +339,21 @@ end
 
 -- Skin flags, because why not?
 COM_AddCommand("skinflags", function(p, flags)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
 	if not flags then
 		CONS_Printf(p, [[skinflags <flags>: Change your current skin flags! You can set multiple flags with the | operator. Flag prefix is SF_. 
 Examples: ($1 represents the current value of the flags)
-]]..yellow..[['$1|SF_FLAG']]..white..[[ will add the specified flag. 
-]]..yellow..[['$1&!SF_FLAG']]..white..[[ will remove the flag.
-]]..yellow..[['SF_FLAG|SF_FLAG2']]..white..[[ will give you only the specified flags.]])
+]]..terminal.colors.yellow..[['$1|SF_FLAG']]..terminal.colors.white..[[ will add the specified flag. 
+]]..terminal.colors.yellow..[['$1&!SF_FLAG']]..terminal.colors.white..[[ will remove the flag.
+]]..terminal.colors.yellow..[['SF_FLAG|SF_FLAG2']]..terminal.colors.white..[[ will give you only the specified flags.]])
 		return
 	end
 	local test = generateFlags(flags, p.charflags)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
 		return
 	end
 	p.charflags = test
@@ -364,7 +361,7 @@ end)
 
 -- Mobj flags, useful for screwing around
 COM_AddCommand("mobjflags", function(p, flags)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -376,7 +373,7 @@ COM_AddCommand("mobjflags", function(p, flags)
 	end
 	local test = generateFlags(flags, p.mo.flags)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
 		return
 	end
 	p.mo.flags = test
@@ -384,7 +381,7 @@ end)
 
 -- Mobj flags 2, more stuff to mess around with
 COM_AddCommand("mobjflags2", function(p, flags)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -396,7 +393,7 @@ COM_AddCommand("mobjflags2", function(p, flags)
 	end
 	local test = generateFlags(flags, p.mo.flags2)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
 		return
 	end
 	p.mo.flags2 = test
@@ -404,7 +401,7 @@ end)
 
 -- Mobj extra flags, you know the drill.
 COM_AddCommand("mobjeflags", function(p, flags)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -416,7 +413,7 @@ COM_AddCommand("mobjeflags", function(p, flags)
 	end
 	local test = generateFlags(flags, p.mo.eflags)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
 		return
 	end
 	p.mo.eflags = test
@@ -425,7 +422,7 @@ end)
 
 -- Player flags, for all kinds of things!
 COM_AddCommand("pflags", function(p, flags)
-	if not A_MServ_HasPermission(p, UP_SELFCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -437,7 +434,7 @@ COM_AddCommand("pflags", function(p, flags)
 	end
 	local test = generateFlags(flags, p.pflags)
 	if test == nil then
-		CONS_Printf(p, "Error occured while parsing "..yellow..flags..white..".")
+		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
 		return
 	end
 	p.pflags = test
@@ -445,7 +442,7 @@ end)
 
 -- Kills all enemies in the map, provided they're actually enemies
 COM_AddCommand("destroyallenemies", function(p)
-	if not A_MServ_HasPermission(p, UP_GLOBALCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatglobal) then
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
 	end
@@ -460,12 +457,12 @@ end)
 
 --Spawn an object by the power of EvalMath!
 COM_AddCommand("spawnobject", function(p, objecttype)
-	if not A_MServ_HasPermission(p, UP_GLOBALCHEATS) then
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatglobal) then
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
 	end
 	if not objecttype then CONS_Printf(p, "spawnobject <mobj>: Spawns the corresponding mobj 100 fracunits in front of you!") return end
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
-	local call = pcall(do P_SpawnMobj(p.mo.x + 100*FRACUNIT, p.mo.y + 100*FRACUNIT, p.mo.z, EvalMath(objecttype)) end) -- I think this is how you do it?
-	if not call then CONS_Printf(p, "Error occurred while parsing "..yellow..objecttype..white..".") return end
+	local call = pcall(do P_SpawnMobj(p.mo.x + 100*cos(p.mo.angle), p.mo.y + 100*sin(p.mo.angle), p.mo.z, EvalMath(objecttype)) end) -- I think this is how you do it?
+	if not call then CONS_Printf(p, "Error occurred while parsing "..terminal.colors.yellow..objecttype..terminal.colors.white..".") return end
 end)

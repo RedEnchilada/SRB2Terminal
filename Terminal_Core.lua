@@ -130,7 +130,7 @@ terminal.permissions.text = {
 	cheatglobal   = terminal.permissions.GLOBALCHEATS,
 	allcheat      = terminal.permissions.SELFCHEATS|terminal.permissions.OTHERCHEATS|terminal.permissions.GLOBALCHEATS,
 	moderator     = terminal.permissions.PLAYERMANAGE,
-	halfop        = terminal.permissions.GAMEMANAGE,
+	manager       = terminal.permissions.GAMEMANAGE,
 	operator      = terminal.permissions.PLAYERMANAGE|terminal.permissions.GAMEMANAGE,
 	admin         = terminal.permissions.FULLCONTROL,
 	all           = ~0 -- EVERYTHING! MWAHAHA
@@ -595,11 +595,11 @@ To vote in a currently active poll, type "vote <option>" in the console. (option
 The "givepermission" and "removepermission" commands are used to set permissions. More info about each permission:
 cheatself (+): Players can use cheats that affect themselves, such as "god" and "noclip".
 ]]-- cheatothers: Players can use cheats that affect other players. (These are not yet implemented.)
-..[[cheatall (+): Players can use cheats that affect the entire server, such as "setrings".
+..[[cheatglobal (+): Players can use cheats that affect the entire server, such as "setrings".
 allcheat (+): Players get all of the above permissions.
 moderator (@): Players can kick and ban others from the game, using the "dokick" and "doban" commands.
-halfop (%): Players can change the game map and change other options.
-operator (@): Players get moderator and halfop permissions.
+manager (%): Players can change the game map and change other options.
+operator (@): Players get moderator and manager permissions.
 admin (&): Players can execute any command from the server's end using the "do" command.]],
 
 		credits = [[Terminal development credits:
