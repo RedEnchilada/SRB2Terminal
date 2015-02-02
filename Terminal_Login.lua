@@ -33,7 +33,7 @@ end
 -- Command used by a server-side script to load password hashes
 COM_AddCommand("loadhash", function(p, name, hash, perms)
 	if p ~= server then return end
-	logPasses()[name] = {tonumber(hash), tonumber(perms)}
+	s.logPasses[name] = {tonumber(hash), tonumber(perms)}
 end, 1)
 
 local function passwordHash(original)
@@ -205,7 +205,7 @@ COM_AddCommand("logintime", function(p, val)
 		CONS_Printf(p, "You need \"moderator\" permissions to use this!")
 		return
 	end
-	if not tonumber(val) or tonumber(val) <= 0 then
+	if not tonumber(val) or tonumber(val) < 0 then
 		CONS_Printf(p, "logintime <value>: Sets the timeout a player has to login to an account nickname before being forcibly renamed. Default timeout is 30 seconds. (set to 0 to disable)")
 		return
 	end
