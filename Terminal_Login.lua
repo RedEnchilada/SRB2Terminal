@@ -1,16 +1,7 @@
 -- Terminal Login:
 -- Optional file. Handles logins and registration. (Requires Terminal_Core.lua)
 
--- Colors:
-
-local white  = "\x80" 
-local purple = "\x81" 
-local yellow = "\x82" 
-local green  = "\x83" 
-local blue   = "\x84" 
-local red    = "\x85" 
-local grey   = "\x86" 
-local orange = "\x87" 
+assert(terminal, "the Terminal core script must be added first!")
 
 --local logPasses = {} -- name = {hash, perms},
 
@@ -72,7 +63,7 @@ COM_AddCommand("login", function(p, arg1, arg2)
 	
 	if not (passes[name] and passes[name][1] == pass) then
 		CONS_Printf(server, p.name.." tried unsuccessfully to log in.")
-		CONS_Printf(p, yellow.."Login incorrect."..white)
+		CONS_Printf(p, terminal.colors.yellow.."Login incorrect."..terminal.colors.white)
 		return
 	end
 	
@@ -142,11 +133,11 @@ COM_AddCommand("register", function(p, pass)
 %sMSERV_REGISTER:%s %s
 Add the following to "term_logins.txt" to complete this user's registration:
 loadhash "%s" %s %s
-]]):format(yellow, white, name, name, pass, p.servperm))
+]]):format(terminal.colors.yellow, terminal.colors.white, name, name, pass, p.servperm))
 	if updatingpass then
 		CONS_Printf(p, "Your password has been changed.")
 	else
-		CONS_Printf(p, "Your username has been registered. Use the "..yellow.."login"..white.." command to log into it in the future!")
+		CONS_Printf(p, "Your username has been registered. Use the "..terminal.colors.yellow.."login"..terminal.colors.white.." command to log into it in the future!")
 		print(p.name .. " has registered on this server.")
 	end
 	p.nickservname = name
@@ -154,7 +145,7 @@ end)
 
 -- Overriding "verify" and "password" to lock out the old vanilla verification system - it'll just cause confusion!
 local function noOldAuth(p)
-	CONS_Printf(p, yellow.."verify"..white.." and "..yellow.."password"..white.." are out. Type "..yellow.."term_help logins"..white.." for more information about the new authentication system in place!")
+	CONS_Printf(p, terminal.colors.yellow.."verify"..terminal.colors.white.." and "..terminal.colors.yellow.."password"..terminal.colors.white.." are out. Type "..terminal.colors.yellow.."term_help logins"..terminal.colors.white.." for more information about the new authentication system in place!")
 end
 COM_AddCommand("verify", noOldAuth)
 COM_AddCommand("password", noOldAuth)
@@ -197,11 +188,9 @@ addHook("ThinkFrame", do
 	end
 end)
 
--- Options
-local UP_PLAYERMANAGE = 8
 
 COM_AddCommand("logintime", function(p, val)
-	if not A_MServ_HasPermission(p, UP_PLAYERMANAGE) then
+	if not terminal.HasPermission(p, terminal.permissions.text.moderator) then
 		CONS_Printf(p, "You need \"moderator\" permissions to use this!")
 		return
 	end
@@ -219,7 +208,7 @@ COM_AddCommand("logintime", function(p, val)
 end)
 
 COM_AddCommand("defaultname", function(p, val)
-	if not A_MServ_HasPermission(p, UP_PLAYERMANAGE) then
+	if not terminal.HasPermission(p, terminal.permissions.text.moderator) then
 		CONS_Printf(p, "You need \"moderator\" permissions to use this!")
 		return
 	end
@@ -231,3 +220,10 @@ COM_AddCommand("defaultname", function(p, val)
 	o.default = val
 	CONS_Printf(p, ("Default guest name changed to %s."):format(val))
 end)
+
+
+-- Help listing
+terminal.AddHelp("logins", 
+[[Terminal provides a login system for account registration. Logging in will allow you to keep permissions given to you by the server. (For more info about permissions, type "term_help permissions" in the console.)
+
+To register an account, type "register <password>" into the console. The server admin will have to complete the registration process. Once this is done, you can type "login [<username>] <password>" to log into your account. (username is the name you registered with, and will default to your current username if not given.)]])

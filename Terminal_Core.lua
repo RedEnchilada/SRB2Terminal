@@ -267,7 +267,7 @@ end
 
 -- Grabs Terminal names, so the PlayerMsg hook below isn't a clustered mess.
 local function getTermName(player) 
-	return getSymbol(player)..getTeamColor(player)..player.name..white
+	return getSymbol(player)..getTeamColor(player)..player.name..terminal.colors.white
 end
 
 -- Manage player names - Wolfs
