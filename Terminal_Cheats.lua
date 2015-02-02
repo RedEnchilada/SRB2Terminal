@@ -17,7 +17,7 @@ local red    = "\x85"
 local grey   = "\x86" 
 local orange = "\x87" 
 
--- If it's a cheat in vanilla, it's here. If it isn't, it's probably anyways.
+-- If it's a cheat in vanilla, it's here. If it isn't, it probably is anyways.
 
 --SetRings Command
 COM_AddCommand("setrings", function(p, health)
@@ -51,13 +51,14 @@ COM_AddCommand("setlives", function(p, lives)
 		return
 	end
 	lives = tonumber(lives)
-	if lives and lives >= 127
-		lives = 127
-	end
-	if lives and lives < 0
-		lives = nil
-	end
-	if lives == nil
+	if lives then
+		if lives >= 127 then
+			lives = 127
+		end
+		if lives < 0 then
+			lives = nil
+		end
+	else
 		CONS_Printf(p, "setlives <number of lives>: Sets the player's lives to a specific number.")
 		return
 	end

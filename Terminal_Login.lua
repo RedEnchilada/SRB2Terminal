@@ -15,7 +15,7 @@ local orange = "\x87"
 --local logPasses = {} -- name = {hash, perms},
 
 local function logPasses()
-	local s = A_MServ()
+	local s = server
 	if not s then return {} end -- Error!
 	if not s.logPasses then
 		s.logPasses = {}
@@ -32,7 +32,7 @@ end
 
 -- Command used by a server-side script to load password hashes
 COM_AddCommand("loadhash", function(p, name, hash, perms)
-	if p ~= A_MServ() then return end
+	if p ~= server then return end
 	logPasses()[name] = {tonumber(hash), tonumber(perms)}
 end, 1)
 
@@ -71,7 +71,7 @@ COM_AddCommand("login", function(p, arg1, arg2)
 	local passes = logPasses()
 	
 	if not (passes[name] and passes[name][1] == pass) then
-		CONS_Printf(A_MServ(), p.name.." tried unsuccessfully to log in.")
+		CONS_Printf(server, p.name.." tried unsuccessfully to log in.")
 		CONS_Printf(p, yellow.."Login incorrect."..white)
 		return
 	end
@@ -86,7 +86,7 @@ COM_AddCommand("login", function(p, arg1, arg2)
 	
 	--[[
 	-- Put a table in the server's player with our login attempt
-	local s = A_MServ()
+	local s = server
 	s.servloginattempt = {p, name, pass}
 	
 	-- Load hashes server-side (this will also handle logging-in)
@@ -136,7 +136,7 @@ COM_AddCommand("register", function(p, pass)
 	
 	passes[name] = {pass, p.servperm}
 	
-	local s = A_MServ()
+	local s = server
 	CONS_Printf(s, ([[
 	
 %sMSERV_REGISTER:%s %s
@@ -163,7 +163,7 @@ COM_AddCommand("password", noOldAuth)
 
 -- Name protection, NickServ-style!
 local function nickservopts() -- TODO: NickServ Ghost-style reclamation
-	local s = A_MServ()
+	local s = server
 	if not s then return end -- ABORT ABORT ADJGDFSOIHHO
 	if not s.nickservopts then
 		s.nickservopts = {

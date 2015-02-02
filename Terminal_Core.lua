@@ -68,9 +68,11 @@ local red    = "\x85"
 local grey   = "\x86" 
 local orange = "\x87" 
 
+local colors = {white, purple, yellow, green, blue, red, grey, orange}
+
 -- Can use OR to check for multiple permissions - must have all of them!
 function A_MServ_HasPermission(player, permflags)
-	if player == A_MServ() --[[or player == admin]] then return true end -- Server has ALL the permissions!
+	if player == server --[[or player == admin]] then return true end -- Server has ALL the permissions!
 	if not player.servperm then
 		player.servperm = 0
 	end
@@ -192,7 +194,7 @@ COM_AddCommand("removepermission", function(p, arg1, arg2)
 	end
 end)
 
--- Outdated hack for dedicated servers. Thanks to 2.1.9+, we can point directly to the struct!
+-- Outdated hack for dedicated servers. Thanks to 2.1.10+, we don't need any of this shit!
 -- local dediServer
 
 --[[COM_AddCommand("iamtheserver", function(p)
@@ -201,11 +203,6 @@ end)
 	--COM_BufInsertText(p, "wait 15;wait 15;wait 15;iamtheserver") -- To keep syncing it for players! (lol NetVars hook still being broken)
 end, 1)]]
 
-function A_MServ()
-	if not netgame then return server end -- Should work properly in SP since this is here
-	if server then return server else return dedicatedserver end
-end
-
 -- Deprecated synchronization code
 --[[addHook("PlayerJoin", do
 	if dediServer and dediServer.valid then
@@ -213,16 +210,18 @@ end
 	end
 end)]]
 
+-- Change the color of permission symbols. TODO: Option for permission color to be determined by team
+local cv_permcolor = CV_RegisterVar({"permissioncolor", "green", 0, {white = 1, purple = 2, yellow = 3, green = 4, blue = 5, red = 6, grey = 7, orange = 8}}) 
 
 -- Player symbol management
 local function getSymbol(player)
-	if player == server then return green.."~"..white end -- Server
+	if player == server then return colors[cv_permcolor.value].."~"..white end -- Server
 	local p = player.servperm
 	if not p then return "" end -- No permissions! D:
-	if (p & UP_FULLCONTROL) then return green.."&"..white end -- Admin
-	if (p & UP_PLAYERMANAGE) then return green.."@"..white end -- Operator
-	if (p & UP_GAMEMANAGE) then return green.."%"..white end -- Half-Op
-	if (p & permMap.allcheat) then return green.."+"..white end -- Cheater
+	if (p & UP_FULLCONTROL) then return colors[cv_permcolor.value].."&"..white end -- Admin
+	if (p & UP_PLAYERMANAGE) then return colors[cv_permcolor.value].."@"..white end -- Operator
+	if (p & UP_GAMEMANAGE) then return colors[cv_permcolor.value].."%"..white end -- Half-Op
+	if (p & permMap.allcheat) then return colors[cv_permcolor.value].."+"..white end -- Cheater
 end
 
 -- Function for retrieving the current team color
@@ -242,7 +241,7 @@ end
 
 -- Manage player names - Wolfs
 addHook("PlayerMsg", function(source, msgtype, target, message)
-	if message:sub(1, 1) == "/" then
+	if message:sub(1, 1) == "/" then -- TODO: fix this cause /me is broken
 		COM_BufInsertText(source, message:sub(2))
 		return true
 	end
@@ -393,7 +392,7 @@ COM_AddCommand("changemap", function(p, ...)
 	end
 	
 	-- TODO make this less of a lazy hack
-	COM_BufInsertText(A_MServ(), cmd)
+	COM_BufInsertText(server, cmd)
 	CONS_Printf(p, "Changing map... (If nothing happens, try -force or -gametype!)")
 end)
 
@@ -449,7 +448,7 @@ COM_AddCommand("dokick", function(p, arg1, ...)
 		end
 	end
 	
-	COM_BufInsertText(A_MServ(), cmd)
+	COM_BufInsertText(server, cmd)
 end)
 
 -- SRB2 seriously needs a super() function for replaced commands.
@@ -482,7 +481,7 @@ COM_AddCommand("doban", function(p, arg1, ...)
 		end
 	end
 	
-	COM_BufInsertText(A_MServ(), cmd)
+	COM_BufInsertText(server, cmd)
 end)
 
 -- "do" command, for ultimate power! (And this one doesn't need the command to be wrapped in quotes! -Red)
@@ -518,8 +517,8 @@ COM_AddCommand("do", function(p, ...)
 	end -- You could theoretically remove the leading space from cmd, but it doesn't actually affect the execution, so let's not. :)
 	--print(cmd)
 	CONS_Printf(p, "Executing"..yellow..cmd..white.." in the server console.")
-	CONS_Printf(A_MServ(), yellow..p.name.." executed the following in the server console: "..blue..">"..cmd)
-	COM_BufInsertText(A_MServ(), cmd)
+	CONS_Printf(server, yellow..p.name.." executed the following in the server console: "..blue..">"..cmd)
+	COM_BufInsertText(server, cmd)
 end)
 
 -------------------
