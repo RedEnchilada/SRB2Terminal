@@ -11,12 +11,12 @@ local function logPasses()
 	if not s.logPasses then
 		s.logPasses = {}
 		COM_BufInsertText(s, "exec term_logins.txt -silent") -- Load passes from log file
-		s.logpasstimeout = 200
+		s.logpasstimeout = 900
 	elseif s.logpasstimeout > 0 then
 		s.logpasstimeout = $1-1
 	else
 		COM_BufInsertText(s, "exec term_logins.txt -silent") -- Reload for safety
-		s.logpasstimeout = 200
+		s.logpasstimeout = 900
 	end
 	return s.logPasses -- name = {hash, perms},
 end
@@ -24,7 +24,7 @@ end
 -- Command used by a server-side script to load password hashes
 COM_AddCommand("loadhash", function(p, name, hash, perms)
 	if p ~= server then return end
-	s.logPasses[name] = {tonumber(hash), tonumber(perms)}
+	server.logPasses[name] = {tonumber(hash), tonumber(perms)}
 end, 1)
 
 local function passwordHash(original)
@@ -74,33 +74,7 @@ COM_AddCommand("login", function(p, arg1, arg2)
 		print(p.name .. " has logged into their account.")
 	end
 	p.nickservname = name
-	
-	--[[
-	-- Put a table in the server's player with our login attempt
-	local s = server
-	s.servloginattempt = {p, name, pass}
-	
-	-- Load hashes server-side (this will also handle logging-in)
-	COM_BufInsertText(s, "exec term_logins.txt -silent")]]
 end)
---[[ No longer used after the permissions rewrite
-COM_AddCommand("parselogin", function(p)
-	if not p.servloginattempt then return end -- Some buffoon trying to use this command externally!
-	local player, name, pass = unpack(p.servloginattempt)
-	
-	if not (logPasses[name] and logPasses[name][1] == pass) then
-		CONS_Printf(p, player.name.." tried unsuccessfully to log in.")
-		CONS_Printf(player, "\x82Login incorrect.\x80")
-		return
-	end
-	
-	player.servperm = ($1 or 0)|logPasses[name][2]
-	if cleanName(player.name) ~= name then
-		print(player.name .. " has logged into "..name.."'s account.")
-	else
-		print(player.name .. " has logged into their account.")
-	end
-end, 1)]]
 
 COM_AddCommand("register", function(p, pass)
 	if not pass then
