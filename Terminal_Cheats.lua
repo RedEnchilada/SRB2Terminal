@@ -55,7 +55,7 @@ end)
 
 --God Command
 COM_AddCommand("god", function(player)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -71,7 +71,7 @@ end)
 
 --NoClip Command
 COM_AddCommand("noclip", function(player)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -158,7 +158,7 @@ end)
 
 -- Gain overpowered qualities!
 COM_AddCommand("getallemeralds", function(player)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -185,7 +185,7 @@ end)
 
 -- Change your character's ability!
 COM_AddCommand("charability", function(player, arg1)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -202,7 +202,7 @@ end)
 
 -- Can't forget ability2!
 COM_AddCommand("charability2", function(player, arg1)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
@@ -219,7 +219,7 @@ end)
 
 -- ActionSpeed, for science.
 COM_AddCommand("actionspd", function(player, arg1)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
