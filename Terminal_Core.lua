@@ -332,8 +332,10 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 	-- Moved this check to the start of the function so csays can start with / because why the fuck would you use csay to execute a console command
 	if msgtype == 3 then return false end -- TODO override cechos to allow cool shit like colors? -Red
 	
-	if message:sub(1, 1) == "/" and message:sub(1, 4) ~= "/me " then
-		if message:sub(1, 2) == "//" then -- Slash escaping; remove the first slash and parse msg as normal
+	if message:sub(1, 1) == "/" then 
+		if message:sub(1, 4) == "/me " then
+			return false
+		elseif message:sub(1, 2) == "//" then -- Slash escaping; remove the first slash and parse msg as normal
 			message = message:sub(2)
 		elseif message:sub(1, 3) == "/t " then -- Alias chat to a saytem
 			message = message:sub(4)
