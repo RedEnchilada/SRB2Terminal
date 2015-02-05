@@ -463,6 +463,9 @@ COM_AddCommand("spawnobject", function(p, objecttype)
 	end
 	if not objecttype then CONS_Printf(p, "spawnobject <mobj>: Spawns the corresponding mobj 100 fracunits in front of you!") return end
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
-	local call = pcall(do P_SpawnMobj(p.mo.x + 100*cos(p.mo.angle), p.mo.y + 100*sin(p.mo.angle), p.mo.z, EvalMath(objecttype)) end) -- I think this is how you do it?
+	local call = pcall(do
+		local butt = P_SpawnMobj(p.mo.x + 100*cos(p.mo.angle), p.mo.y + 100*sin(p.mo.angle), p.mo.z, EvalMath(objecttype))
+		butt.angle = p.mo.angle
+	end)
 	if not call then CONS_Printf(p, "Error occurred while parsing "..terminal.colors.yellow..objecttype..terminal.colors.white..".") return end
 end)
