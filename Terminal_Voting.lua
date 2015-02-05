@@ -1,23 +1,7 @@
 -- Terminal Voting
--- Voting system, for map changes and other useful things! (Requires Terminal_Core.lua, as well as Terminal_Maplist.lua or an equivalent)
+-- Voting system, for map changes and other useful things! (Requires Terminal_Core.lua)
 
--- Stuff from the main Terminal file
-
--- Colors!
-
-local white  = "\x80" 
-local purple = "\x81" 
-local yellow = "\x82" 
-local green  = "\x83" 
-local blue   = "\x84" 
-local red    = "\x85" 
-local grey   = "\x86" 
-local orange = "\x87" 
-
--- Permissions used in this file
-local UP_GAMEMANAGE  = 16
-local UP_FULLCONTROL = 32
--- Don't copy-pastarino the above!
+assert(terminal, "the Terminal core script must be added first!")
 
 -- Map voting! (And other types of voting, while we're here!)
 
@@ -59,8 +43,8 @@ end
 -------------------
 
 local function mapoverrides(name)
-	if A_MServ_MapOverride then
-		local f = A_MServ_MapOverride(name) -- Define this function in a separate script if you want to have your own custom overrides
+	if terminal.MapOverride then
+		local f = terminal.MapOverride(name) -- Define this function in a separate script if you want to have your own custom overrides
 		if f then return f end
 	end
 	
@@ -100,16 +84,12 @@ local function mapoverrides(name)
 end
 
 -- Global maplist function
-function A_MServ_GetMapList() 
+terminal.GetMapList = function() 
 	local maplist = {}
 	
-	-- Simple function for checking and deciding on conditions on the fly
-	local function tern(cond, t, f)
-   		if cond return t else return f end
-	end
 	for i = 1, #mapheaderinfo do
 		if mapheaderinfo[i] then
-			local lvname = mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " Zone")..tern(mapheaderinfo[i].actnum == 0, "", " "..mapheaderinfo[i].actnum) -- Really long formula to generate the name string. Auto-capitalizes the first letter of each word.
+			local lvname = terminal.MapName(i)
 			--print(i.."=>"..lvname)
 			
 			local gtlist
@@ -179,7 +159,7 @@ local function getMapChangePoll(poll, polltype)
 		
 		-- Get the current map's category
 		local currentcategory
-		local maplist = A_MServ_GetMapList()
+		local maplist = terminal.GetMapList()
 		for category,v in pairs(maplist) do
 			local gt = v[1]
 			if gt ~= gametype then continue end -- Not in the right gametype, this can't be the right category!
@@ -338,7 +318,7 @@ COM_AddCommand("startvote", function(p, arg1, ...)
 		CONS_Printf(p, "There's already a vote in progress!")
 		return
 	end
-	if p.polltimeout and not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
+	if p.polltimeout and not terminal.HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You've already made a poll recently! Wait a bit.")
 		return
 	end
@@ -381,6 +361,9 @@ Available poll types: changemap, changecategory, teamscramble, exitlevel, resetm
 		end
 		startPoll(POLL_KICK, player)
 		print(p.name.." wants to kick "..player.name..".")
+	else
+		CONS_Printf(p, "Not a valid poll type!")
+		p.polltimeout = 0
 	end
 end)
 
@@ -390,7 +373,7 @@ COM_AddCommand("startpoll", function(p, question, ...)
 		CONS_Printf(p, "There's already a vote in progress!")
 		return
 	end
-	if p.polltimeout and not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
+	if p.polltimeout and not terminal.HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You've already made a poll recently! Wait a bit.")
 		return
 	end
@@ -447,7 +430,7 @@ COM_AddCommand("vote", function(p, opt)
 		return
 	end
 	poll.votes[#p] = opt
-	CONS_Printf(p, ("Voted for "..yellow.."%s"..white.."."):format(poll.answers[opt]))
+	CONS_Printf(p, ("Voted for "..terminal.colors.yellow.."%s"..terminal.colors.white.."."):format(poll.answers[opt]))
 end)
 
 -- Resolve poll
@@ -577,7 +560,7 @@ end, "game")
 
 -- Poll management commands
 COM_AddCommand("votetime", function(p, timer)
-	if not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
+	if not A_MServ_HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end
@@ -592,7 +575,7 @@ COM_AddCommand("votetime", function(p, timer)
 end)
 
 COM_AddCommand("pollthrottle", function(p, timer)
-	if not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
+	if not A_MServ_HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end
@@ -607,7 +590,7 @@ COM_AddCommand("pollthrottle", function(p, timer)
 end)
 
 COM_AddCommand("resolvepoll", function(p)
-	if not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
+	if not A_MServ_HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end
@@ -620,7 +603,7 @@ COM_AddCommand("resolvepoll", function(p)
 end)
 
 COM_AddCommand("removepoll", function(p)
-	if not A_MServ_HasPermission(p, UP_GAMEMANAGE) then
+	if not A_MServ_HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end

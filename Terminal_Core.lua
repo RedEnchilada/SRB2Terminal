@@ -67,6 +67,20 @@ terminal.ConsoleCommand = function(...)
 	return cmd
 end
 
+-- Helper function for ternary statements
+rawset(_G, "tern", function(cond, t, f)
+	if cond return t else return f end
+end)
+
+-- Function to return the map name of a specified map - errors out if the map header isn't set
+terminal.MapName = function(i)
+	if not mapheaderinfo[i] then error("MapName cannot be called with an empty map's index!", 2) end
+	return mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower():gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)
+		..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " Zone")
+		..tern(mapheaderinfo[i].actnum == 0, "", " "..mapheaderinfo[i].actnum)
+	-- Really long formula to generate the name string. Auto-capitalizes the first letter of each word.
+end
+
 -- Permissions system! -Red
 terminal.permissions = {
 	SELFCHEATS   = 1,
