@@ -81,6 +81,49 @@ terminal.MapName = function(i)
 	-- Really long formula to generate the name string. Auto-capitalizes the first letter of each word.
 end
 
+-- Similar to above, but returns multiple variations for searching purposes, all regulated to lowercase
+terminal.MapSearchNames = function(i)
+	if not mapheaderinfo[i] then error("MapSearchNames cannot be called with an empty map's index!", 2) end
+	local ret = {}
+	
+	-- Full name, always returned
+	table.insert(ret, 
+		mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower()
+			..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " zone")
+			..tern(mapheaderinfo[i].actnum == 0, "", " act "..mapheaderinfo[i].actnum)
+	)
+	
+	-- Without act keyword, only returned if an act was set
+	if mapheaderinfo[i].actnum ~= 0 then
+		table.insert(ret, 
+			mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower()
+				..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " zone")
+				.." "..mapheaderinfo[i].actnum
+		)
+	end
+	
+	-- Without zone keyword, only returned if "ZONE" was set
+	if not (mapheaderinfo[i].levelflags & LF_NOZONE) then
+		table.insert(ret, 
+			mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower()
+				..tern(mapheaderinfo[i].levelflags & LF_NOZONE, "", " zone")
+				..tern(mapheaderinfo[i].actnum == 0, "", " act "..mapheaderinfo[i].actnum)
+		)
+	
+		-- Without act keyword, only returned if an act was set
+		if mapheaderinfo[i].actnum ~= 0 then
+			table.insert(ret, 
+				mapheaderinfo[i].lvlttl:gsub("%z.*", ""):lower()
+					.." "..mapheaderinfo[i].actnum
+			)
+		end
+	end
+	
+	-- TODO add abbreviation?
+	
+	return ret
+end
+
 -- Permissions system! -Red
 terminal.permissions = {
 	SELFCHEATS   = 1,
@@ -552,6 +595,134 @@ COM_AddCommand("do", function(p, ...)
 	CONS_Printf(p, "Executing"..terminal.colors.yellow..cmd..terminal.colors.white.." in the server console.")
 	CONS_Printf(server, terminal.colors.yellow..p.name.." executed the following in the server console: "..terminal.colors.blue..">"..cmd:sub(2))
 	COM_BufInsertText(server, cmd)
+end)
+
+-- "findmap" command; go to a map by name! :O
+-- Start with a helper function, for Levenshtein distance (thanks https://gist.github.com/Badgerati/3261142 !)
+terminal.LevenshteinDistance = function(str1, str2)
+	local len1 = string.len(str1)
+	local len2 = string.len(str2)
+	local matrix = {}
+	local cost = 0
+	
+        -- quick cut-offs to save time
+	if (len1 == 0) then
+		return len2
+	elseif (len2 == 0) then
+		return len1
+	elseif (str1 == str2) then
+		return 0
+	end
+	
+        -- initialise the base matrix values
+	for i = 0, len1, 1 do
+		matrix[i] = {}
+		matrix[i][0] = i
+	end
+	for j = 0, len2, 1 do
+		matrix[0][j] = j
+	end
+	
+        -- actual Levenshtein algorithm
+	for i = 1, len1, 1 do
+		for j = 1, len2, 1 do
+			if (str1:byte(i) == str2:byte(j)) then
+				cost = 0
+			else
+				cost = 1
+			end
+			
+			matrix[i][j] = min(min(matrix[i-1][j] + 1, matrix[i][j-1] + 1), matrix[i-1][j-1] + cost)
+		end
+	end
+	
+        -- return the last value - this is the Levenshtein distance
+	return matrix[len1][len2]
+end
+
+-- A function to search the available maps for one by name. Returns the maplist sorted in order of closeness, each entry in the following struct:
+--[[
+	name = map name
+	maptext = MAPxx
+	dist = lev distance
+]]
+-- If exact match is found, fuck everything else and return a table with *JUST* this entry
+terminal.SortMapsByName = function(name, alwaysall)
+	local ret = {}
+	name = $1:lower()
+	
+	for i=1, #mapheaderinfo do
+		if not mapheaderinfo[i] then continue end
+		
+		local block = {}
+		
+		local names = terminal.MapSearchNames(i)
+		
+		block.name = names[1]
+		block.maptext = G_BuildMapName(i)
+		
+		local dist = 9999*FRACUNIT
+		
+		for _,v in ipairs(names) do
+			dist = min($1, (terminal.LevenshteinDistance(name, v)*FRACUNIT)/v:len())
+			
+			if (not alwaysall) and dist == 0 then -- Quick escape!
+				block.dist = 0
+				return {block}
+			end
+		end
+		
+		block.dist = dist
+		table.insert(ret, block)
+	end
+	
+	table.sort(ret, function(a, b) return a.dist < b.dist end)
+	
+	--[[ debug
+	for _,v in ipairs(ret) do
+		print(v.dist.." "..v.maptext.." "..v.name)
+	end --]]
+	
+	return ret
+end
+
+-- Now the actual console command!
+COM_AddCommand("findmap", function(p, name, ...)
+	local nowarp
+	if ... == "-nowarp" then
+		nowarp = true
+	elseif not terminal.HasPermission(p, terminal.permissions.text.manager) then
+		CONS_Printf(p, "You need \"manager\" permissions to use this!")
+		return
+	end
+	if not name then -- TODO: open a menu that can be operated with game controls?
+		CONS_Printf(p, "findmap \"<level name>\": Change the game map!")
+		return
+	end
+	
+	local names = terminal.SortMapsByName(name, nowarp)
+	
+	if nowarp then
+		CONS_Printf(p, "Closest matches for \""..name.."\":")
+		for i = 1,5 do
+			CONS_Printf(p, i..") "..names[i].maptext..": "..names[i].name)
+		end
+		return
+	end
+	
+	if names[1].dist > FRACUNIT/2 or (names[2] and FixedDiv(names[1].dist, names[2].dist) > 60000) then
+		CONS_Printf(p, "No close enough match for \""..name.."\" found! Closest matches:")
+		for i = 1,5 do
+			CONS_Printf(p, i..") "..names[i].maptext..": "..names[i].name)
+		end
+		return
+	end
+	
+	local cmd = "map "..names[1].maptext..terminal.ConsoleCommand(...)
+	
+	-- TODO make this less of a lazy hack
+	COM_BufInsertText(server, cmd)
+	CONS_Printf(p, "Changing map... (If nothing happens, try -force or -gametype!)")
 end)
 
 -------------------
