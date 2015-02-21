@@ -348,13 +348,13 @@ Available poll types: changemap, changecategory, teamscramble, exitlevel, resetm
 			CONS_Printf(p, "startvote kick <player>: Vote to kick a specific player")
 			return
 		end
-		local player = A_MServ_getPlayerFromString(...)
+		local player = terminal.GetPlayerFromString(...)
 		if not player then
 			CONS_Printf(p, ("Player %s doesn't exist!"):format(...))
 			p.polltimeout = 0
 			return
 		end
-		if A_MServ_HasPermission(player, UP_FULLCONTROL) then
+		if terminal.HasPermission(player, UP_FULLCONTROL) then
 			CONS_Printf(p, ("Player %s is an admin or host. You can't votekick those!"):format(...))
 			p.polltimeout = 0
 			return
@@ -560,7 +560,7 @@ end, "game")
 
 -- Poll management commands
 COM_AddCommand("votetime", function(p, timer)
-	if not A_MServ_HasPermission(p, terminal.permissions.text.manager) then
+	if not terminal.HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end
@@ -575,7 +575,7 @@ COM_AddCommand("votetime", function(p, timer)
 end)
 
 COM_AddCommand("pollthrottle", function(p, timer)
-	if not A_MServ_HasPermission(p, terminal.permissions.text.manager) then
+	if not terminal.HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end
@@ -590,7 +590,7 @@ COM_AddCommand("pollthrottle", function(p, timer)
 end)
 
 COM_AddCommand("resolvepoll", function(p)
-	if not A_MServ_HasPermission(p, terminal.permissions.text.manager) then
+	if not terminal.HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end
@@ -603,7 +603,7 @@ COM_AddCommand("resolvepoll", function(p)
 end)
 
 COM_AddCommand("removepoll", function(p)
-	if not A_MServ_HasPermission(p, terminal.permissions.text.manager) then
+	if not terminal.HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end
