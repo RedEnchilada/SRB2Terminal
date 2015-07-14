@@ -196,7 +196,7 @@ COM_AddCommand("charability", function(player, arg1)
 	if arg1 == "default" then
 		player.charability = skins[player.mo.skin].ability
 	else
-		player.charability = EvalMath(arg1:upper())
+		player.charability = _G[arg1:upper()]
 	end
 end)
 
@@ -213,7 +213,7 @@ COM_AddCommand("charability2", function(player, arg1)
 	if arg1 == "default" then
 		player.charability2 = skins[player.mo.skin].ability2
 	else
-		player.charability2 = EvalMath(arg1:upper())
+		player.charability2 = _G[arg1:upper()]
 	end
 end)
 
@@ -286,7 +286,7 @@ Possible values: none (removes your shield), force, elemental AKA fire, attracti
 	CONS_Printf(p, "Shield changed to \""..shield.."\".")
 end)
 
--- By the power of 2.1.9, RunOnWater!
+-- By the power of 2.1.9+, RunOnWater!
 COM_AddCommand("runonwater", function(p)
 	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
@@ -316,128 +316,96 @@ More commands are available, too.]])
 
 -- BREAKING NEWS: WOLFY ADDS USELESS SILLY THINGS -Red
 
--- Template function for evaluating psuedo variables in flag strings
-local function generateFlags(flags, original)
-	local flagtype = original
-	local test = pcall(function()
-		flags = $1:gsub("$1", original)--[[
-		if flags:sub(1, 3) == "$1|" then
-			flagtype = $1|EvalMath(flags:upper():sub(4))
-		elseif flags:sub(1, 3) == "$1&" then
-			flagtype = $1&EvalMath(flags:upper():sub(4))
-		elseif flags:sub(1, 4) == "$1^^" then
-			flagtype = $1^^EvalMath(flags:upper():sub(5))
-		else]]
-			flagtype = EvalMath(flags:upper())
-		--end
-	end)
-	if not test then
-		return nil
+terminal.EvalOR = function(str) -- I'm fucking terrible at this. -Wolfs
+	local flags = {}
+	local start = 1
+	local eval
+	if _G[str] then return _G[str] end
+	for i = 1, str:len(), 1 do
+		if (str:sub(i, i) == "|") and (_G[str:sub(start, i-1)]) then
+			table.insert(flags, _G[str:sub(start, i-1)])
+			start = i + 1
+		elseif (i == str:len()) then
+			table.insert(flags, _G[str:sub(start, i)])
+		--[[if (_G[str:sub(start, i)]) then
+			table.insert(flags, _G[str:sub(start, i)])
+			start = i + 2]]
+		end
 	end
-	return flagtype
+	for i, v in ipairs(flags) do
+		if (eval == nil) then
+			eval = flags[i]
+		else
+			eval = $1|flags[i]
+		end
+	end
+	return eval
 end
 
--- Skin flags, because why not?
-COM_AddCommand("skinflags", function(p, flags)
+-- Add flags to the player!
+COM_AddCommand("addflags", function(p, flagtype, flags)
 	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not flags then
-		CONS_Printf(p, [[skinflags <flags>: Change your current skin flags! You can set multiple flags with the | operator. Flag prefix is SF_. 
-Examples: ($1 represents the current value of the flags)
-]]..terminal.colors.yellow..[['$1|SF_FLAG']]..terminal.colors.white..[[ will add the specified flag. 
-]]..terminal.colors.yellow..[['$1&!SF_FLAG']]..terminal.colors.white..[[ will remove the flag.
-]]..terminal.colors.yellow..[['SF_FLAG|SF_FLAG2']]..terminal.colors.white..[[ will give you only the specified flags.]])
+	if not (flags or flagtype) then
+		CONS_Printf(p, [[addflags <flagtype> <flags>: Add to your current flags! You can set multiple flags with the | operator. Possible flag types are skin, mobj, mobj2, extra, and player. 
+Example usage: 'addflags skin SF_RUNONWATER|SF_NOSKID']])
 		return
 	end
-	local test = generateFlags(flags, p.charflags)
-	if test == nil then
-		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
-		return
-	end
-	p.charflags = test
-end)
-
--- Mobj flags, useful for screwing around
-COM_AddCommand("mobjflags", function(p, flags)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
-		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
-		return
-	end
+	
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
-	if not flags then
-		CONS_Printf(p, [[mobjflags <flags>: Change your current mobj flags! You can set multiple flags with the | operator. Flag prefix is MF_, see the 'skinflags' command for examples.]])
-		return
-	end
-	local test = generateFlags(flags, p.mo.flags)
-	if test == nil then
+	
+	local evalflags = terminal.EvalOR(flags)
+	if evalflags == nil then
 		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
 		return
 	end
-	p.mo.flags = test
+	if flagtype == "skin" then
+		p.charflags = $1|evalflags
+	elseif flagtype == "mobj" then
+		p.mo.flags = $1|evalflags
+	elseif flagtype == "mobj2" then
+		p.mo.flags2 = $1|evalflags
+	elseif flagtype == "extra" then
+		p.mo.eflags = $1|evalflags
+	elseif flagtype == "player" then
+		p.pflags = $1|evalflags
+	end
 end)
 
--- Mobj flags 2, more stuff to mess around with
-COM_AddCommand("mobjflags2", function(p, flags)
+-- Remove them, too!
+COM_AddCommand("removeflags", function(p, flagtype, flags)
 	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
-	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
-	if not flags then
-		CONS_Printf(p, [[mobjflags2 <flags>: Change your current MF2 flags! You can set multiple flags with the | operator. Flag prefix is MF2_, see the 'skinflags' command for examples.]])
+	if not (flags or flagtype) then
+		CONS_Printf(p, [[removeflags <flagtype> <flags>: Remove some of your current flags! You can set multiple flags with the | operator. Possible flag types are skin, mobj, mobj2, extra, and player. 
+Example usage: 'removeflags skin SF_RUNONWATER|SF_NOSKID']])
 		return
 	end
-	local test = generateFlags(flags, p.mo.flags2)
-	if test == nil then
+	
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
+	
+	local evalflags = terminal.EvalOR(flags)
+	if evalflags == nil then
 		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
 		return
 	end
-	p.mo.flags2 = test
-end)
-
--- Mobj extra flags, you know the drill.
-COM_AddCommand("mobjeflags", function(p, flags)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
-		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
-		return
+	if flagtype == "skin" then
+		p.charflags = $1 & ~evalflags
+	elseif flagtype == "mobj" then
+		p.mo.flags = $1 & ~evalflags
+	elseif flagtype == "mobj2" then
+		p.mo.flags2 = $1 & ~evalflags
+	elseif flagtype == "extra" then
+		p.mo.eflags = $1 & ~evalflags
+	elseif flagtype == "player" then
+		p.pflags = $1 & ~evalflags
 	end
-	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
-	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
-	if not flags then
-		CONS_Printf(p, [[mobjeflags <flags>: Change your current mobj extra flags! You can set multiple flags with the | operator. Flag prefix is MFE_, see the 'skinflags' command for examples.]])
-		return
-	end
-	local test = generateFlags(flags, p.mo.eflags)
-	if test == nil then
-		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
-		return
-	end
-	p.mo.eflags = test
-end)
-
-
--- Player flags, for all kinds of things!
-COM_AddCommand("pflags", function(p, flags)
-	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
-		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
-		return
-	end
-	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
-	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
-	if not flags then
-		CONS_Printf(p, [[pflags <flags>: Change your current player flags! You can set multiple flags with the | operator. Flag prefix is PF_, see the 'skinflags' command for examples.]])
-		return
-	end
-	local test = generateFlags(flags, p.pflags)
-	if test == nil then
-		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
-		return
-	end
-	p.pflags = test
 end)
 
 -- Kills all enemies in the map, provided they're actually enemies
@@ -455,7 +423,7 @@ COM_AddCommand("destroyallenemies", function(p)
 	end
 end)
 
---Spawn an object by the power of EvalMath!
+-- Spawn an object!
 COM_AddCommand("spawnobject", function(p, objecttype)
 	if not terminal.HasPermission(p, terminal.permissions.text.cheatglobal) then
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
@@ -464,7 +432,7 @@ COM_AddCommand("spawnobject", function(p, objecttype)
 	if not objecttype then CONS_Printf(p, "spawnobject <mobj>: Spawns the corresponding mobj 100 fracunits in front of you!") return end
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	local call = pcall(do
-		local butt = P_SpawnMobj(p.mo.x + 100*cos(p.mo.angle), p.mo.y + 100*sin(p.mo.angle), p.mo.z, EvalMath(objecttype))
+		local butt = P_SpawnMobj(p.mo.x + 100*cos(p.mo.angle), p.mo.y + 100*sin(p.mo.angle), p.mo.z, _G[objecttype])
 		butt.angle = p.mo.angle
 	end)
 	if not call then CONS_Printf(p, "Error occurred while parsing "..terminal.colors.yellow..objecttype..terminal.colors.white..".") return end
