@@ -330,93 +330,103 @@ More commands are available, too.]])
 
 -- BREAKING NEWS: WOLFY ADDS USELESS SILLY THINGS -Red
 
-terminal.EvalOR = function(str) -- I'm fucking terrible at this. -Wolfs
-	local flags = {}
-	local start = 1
-	local eval
-	if tonumber(str) then return tonumber(str) end
-	if _G[str] then return _G[str] end
-	for i = 1, str:len(), 1 do
-		if (str:sub(i, i) == "|") and (_G[str:sub(start, i-1)]) then
-			table.insert(flags, _G[str:sub(start, i-1)])
-			start = i + 1
-		elseif (i == str:len()) then
-			table.insert(flags, _G[str:sub(start, i)])
-		end
+-- Helper function for parsing flag tables
+terminal.generateFlags = function(flagtype, flags)
+	local ret, flagprefix
+	local newflags = {}
+	if flagtype == "skin" then
+		flagprefix = "SF_"
+	elseif flagtype == "mobj" then
+		flagprefix = "MF_"
+	elseif flagtype == "mobj2" then
+		flagprefix = "MF2_"
+	elseif flagtype == "extra" then
+		flagprefix = "MFE_"
+	else
+		flagprefix = "PF_"
 	end
 	for i, v in ipairs(flags) do
-		if (eval == nil) then
-			eval = flags[i]
+		flags[i] = $1:upper()
+		if flags[i]:sub(1, flagprefix:len()) ~= flagprefix then
+			flags[i] = flagprefix..flags[i]
+		end
+		newflags[i] = _G[flags[i]]
+		if (ret == nil) then
+			ret = newflags[i]
 		else
-			eval = $1|flags[i]
+			ret = $1|newflags[i]
 		end
 	end
-	return eval
+	return ret
 end
 
 -- Add flags to the player!
-COM_AddCommand("addflags", function(p, flagtype, flags)
+COM_AddCommand("addflags", function(p, flagtype, ...)
 	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not (flags or flagtype) then
-		CONS_Printf(p, [[addflags <flagtype> <flags>: Add to your current flags! You can set multiple flags with the | operator. Possible flag types are skin, mobj, mobj2, extra, and player. 
-Example usage: 'addflags skin SF_RUNONWATER|SF_NOSKID']])
+	if not (... or flagtype) then
+		CONS_Printf(p, [[addflags <flagtype> <flags>: Add to your current flags! You can separate multiple flags with a space. Possible flag types are skin, mobj, mobj2, extra, and player. 
+Flags don't need prefixes (SF_) and can also be lowercase.
+Example usage: 'addflags skin runonwater noskid']])
 		return
 	end
 	
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	
-	local evalflags = terminal.EvalOR(flags)
-	if evalflags == nil then
-		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
+	local setflags = terminal.generateFlags(flagtype, {...})
+	local cmd = table.concat({...}, " ")
+	if setflags == nil then
+		CONS_Printf(p, "Error occurred while parsing "..terminal.colors.yellow..cmd..terminal.colors.white..".")
 		return
 	end
 	if flagtype == "skin" then
-		p.charflags = $1|evalflags
+		p.charflags = $1|setflags
 	elseif flagtype == "mobj" then
-		p.mo.flags = $1|evalflags
+		p.mo.flags = $1|setflags
 	elseif flagtype == "mobj2" then
-		p.mo.flags2 = $1|evalflags
+		p.mo.flags2 = $1|setflags
 	elseif flagtype == "extra" then
-		p.mo.eflags = $1|evalflags
+		p.mo.eflags = $1|setflags
 	elseif flagtype == "player" then
-		p.pflags = $1|evalflags
+		p.pflags = $1|setflags
 	end
 end)
 
 -- Remove them, too!
-COM_AddCommand("removeflags", function(p, flagtype, flags)
+COM_AddCommand("removeflags", function(p, flagtype, ...)
 	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not (flags or flagtype) then
-		CONS_Printf(p, [[removeflags <flagtype> <flags>: Remove some of your current flags! You can set multiple flags with the | operator. Possible flag types are skin, mobj, mobj2, extra, and player. 
-Example usage: 'removeflags skin SF_RUNONWATER|SF_NOSKID']])
+	if not (... or flagtype) then
+		CONS_Printf(p, [[removeflags <flagtype> <flags>: Remove some of your current flags! You can separate multiple flags with a space. Possible flag types are skin, mobj, mobj2, extra, and player. 
+Flags don't need prefixes (SF_) and can also be lowercase.
+Example usage: 'removeflags skin runonwater noskid']])
 		return
 	end
 	
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	
-	local evalflags = terminal.EvalOR(flags)
-	if evalflags == nil then
-		CONS_Printf(p, "Error occured while parsing "..terminal.colors.yellow..flags..terminal.colors.white..".")
+	local setflags = terminal.generateFlags(flagtype, {...})
+	local cmd = table.concat({...}, " ")
+	if setflags == nil then
+		CONS_Printf(p, "Error occurred while parsing "..terminal.colors.yellow..cmd..terminal.colors.white..".")
 		return
 	end
 	if flagtype == "skin" then
-		p.charflags = $1 & ~evalflags
+		p.charflags = $1 & ~setflags
 	elseif flagtype == "mobj" then
-		p.mo.flags = $1 & ~evalflags
+		p.mo.flags = $1 & ~setflags
 	elseif flagtype == "mobj2" then
-		p.mo.flags2 = $1 & ~evalflags
+		p.mo.flags2 = $1 & ~setflags
 	elseif flagtype == "extra" then
-		p.mo.eflags = $1 & ~evalflags
+		p.mo.eflags = $1 & ~setflags
 	elseif flagtype == "player" then
-		p.pflags = $1 & ~evalflags
+		p.pflags = $1 & ~setflags
 	end
 end)
 
