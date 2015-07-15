@@ -54,34 +54,34 @@ COM_AddCommand("setlives", function(p, lives)
 end)
 
 --God Command
-COM_AddCommand("god", function(player)
-	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
-		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
+COM_AddCommand("god", function(p)
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
-	if not (player.pflags & PF_GODMODE)
-		player.pflags = $1|PF_GODMODE
-		CONS_Printf(player, "Sissy mode enabled.")
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
+	if not (p.pflags & PF_GODMODE)
+		p.pflags = $1|PF_GODMODE
+		CONS_Printf(p, "Sissy mode enabled.")
 	else 
-		player.pflags = $1 & ~PF_GODMODE
-		CONS_Printf(player, "Sissy mode disabled.")
+		p.pflags = $1 & ~PF_GODMODE
+		CONS_Printf(p, "Sissy mode disabled.")
 	end
 end)
 
 --NoClip Command
-COM_AddCommand("noclip", function(player)
-	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
-		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
+COM_AddCommand("noclip", function(p)
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
-	if not (player.pflags & PF_NOCLIP)
-		player.pflags = $1|PF_NOCLIP
-		CONS_Printf(player, "NoClip enabled.")
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
+	if not (p.pflags & PF_NOCLIP)
+		p.pflags = $1|PF_NOCLIP
+		CONS_Printf(p, "NoClip enabled.")
 	else 
-		player.pflags = $1 & ~PF_NOCLIP
-		CONS_Printf(player, "NoClip disabled.")
+		p.pflags = $1 & ~PF_NOCLIP
+		CONS_Printf(p, "NoClip disabled.")
 	end
 end)
 
@@ -96,13 +96,13 @@ hud.add(function(v, player)
 end, "game")]]
 
 -- Devmode ~ Lemme know if it should be done differently. -Red
-hud.add(function(v, player)
-	if player.devmodeOn then
+hud.add(function(v, p)
+	if p.devmodeOn then
 		local right = "right"
-		v.drawString(232, 160, string.format("Pos= %4d,  \n %4d, %4d", player.mo.x/FRACUNIT, player.mo.y/FRACUNIT, player.mo.z/FRACUNIT), V_MONOSPACE|V_RETURN8, "left")
-		v.drawString(320, 176, string.format("Ang= %3d", AngleFixed(player.mo.angle)/FRACUNIT), V_MONOSPACE, right)
-		v.drawString(320, 184, string.format("Mom= %3d, %3d, %3d", player.mo.momx/FRACUNIT, player.mo.momy/FRACUNIT, player.mo.momz/FRACUNIT), V_MONOSPACE, right)
-		v.drawString(320, 192, player.speed/FRACUNIT.." fasts/h", V_MONOSPACE, right)
+		v.drawString(232, 160, string.format("Pos= %4d,  \n %4d, %4d", p.mo.x/FRACUNIT, p.mo.y/FRACUNIT, p.mo.z/FRACUNIT), V_MONOSPACE|V_RETURN8, "left")
+		v.drawString(320, 176, string.format("Ang= %3d", AngleFixed(p.mo.angle)/FRACUNIT), V_MONOSPACE, right)
+		v.drawString(320, 184, string.format("Mom= %3d, %3d, %3d", p.mo.momx/FRACUNIT, p.mo.momy/FRACUNIT, p.mo.momz/FRACUNIT), V_MONOSPACE, right)
+		v.drawString(320, 192, p.speed/FRACUNIT.." fasts/h", V_MONOSPACE, right)
 	end
 end, "game")
 
@@ -128,6 +128,7 @@ COM_AddCommand("warpto", function(p, arg1)
 		return
 	end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if arg1 == nil then
 		CONS_Printf(p, "warpto <player>: Warp to another player's location!")
 		return
@@ -148,23 +149,24 @@ COM_AddCommand("warpto", function(p, arg1)
 end)
 
 -- Kill urself, loser
-COM_AddCommand("suicide", function(player)
-	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
-	if player.mo and player.mo.health > 0
-		P_DamageMobj(player.mo, nil, nil, 10000)
-		print(player.name+" committed seppuku.")
+COM_AddCommand("suicide", function(p)
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
+	if p.mo and p.mo.health > 0
+		P_DamageMobj(p.mo, nil, nil, 10000)
+		print(p.name+" committed seppuku.")
 	end
 end)
 
 -- Gain overpowered qualities!
-COM_AddCommand("getallemeralds", function(player)
-	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
-		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
+COM_AddCommand("getallemeralds", function(p)
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if player.playerstate ~= PST_LIVE then CONS_Printf(player, "You're dead, stupid.") return end
-	CONS_Printf(player, "Fear my overpowered recolor!")
-	player.powers[pw_emeralds] = 127
+	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
+	CONS_Printf(p, "Fear my overpowered recolor!")
+	p.powers[pw_emeralds] = 127
 end)
 
 -- Change your scale
@@ -185,64 +187,64 @@ COM_AddCommand("scale", function(p, scale)
 end)
 
 -- Change your character's ability!
-COM_AddCommand("charability", function(player, arg1)
-	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
-		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
+COM_AddCommand("charability", function(p, arg1)
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if not arg1 then
-		CONS_Printf(player, "charability <ability>: Change your ability! Accepts CA_ arguments or numbers.")
+		CONS_Printf(p, "charability <ability>: Change your ability! Accepts CA_ arguments or numbers.")
 		return
 	end
 	if arg1 == "default" then
-		player.charability = skins[player.mo.skin].ability
+		p.charability = skins[p.mo.skin].ability
 	else
 		if tonumber(arg1) then
-			player.charability = tonumber(arg1)
+			p.charability = tonumber(arg1)
 		else
-			player.charability = _G[arg1:upper()]
+			p.charability = _G[arg1:upper()]
 		end
 	end
 end)
 
 -- Can't forget ability2!
-COM_AddCommand("charability2", function(player, arg1)
-	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
-		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
+COM_AddCommand("charability2", function(p, arg1)
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if not arg1 then
-		CONS_Printf(player, "charability2 <ability>: Change your secondary ability! Accepts CA2_ arguments or numbers.")
+		CONS_Printf(p, "charability2 <ability>: Change your secondary ability! Accepts CA2_ arguments or numbers.")
 		return
 	end
 	if arg1 == "default" then
-		player.charability2 = skins[player.mo.skin].ability2
+		p.charability2 = skins[p.mo.skin].ability2
 	else
 		if tonumber(arg1) then
-			player.charability2 = tonumber(arg1)
+			p.charability2 = tonumber(arg1)
 		else
-			player.charability2 = _G[arg1:upper()]
+			p.charability2 = _G[arg1:upper()]
 		end
 	end
 end)
 
 -- ActionSpeed, for science.
-COM_AddCommand("actionspd", function(player, arg1)
-	if not terminal.HasPermission(player, terminal.permissions.text.cheatself) then
-		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
+COM_AddCommand("actionspd", function(p, arg1)
+	if not terminal.HasPermission(p, terminal.permissions.text.cheatself) then
+		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if not arg1 then
-		CONS_Printf(player, "actionspd <value>: Change how fast you can execute abilities.")
+		CONS_Printf(p, "actionspd <value>: Change how fast you can execute abilities.")
 		return
 	end
 	if arg1 == "default" then
-		player.actionspd = skins[player.mo.skin].actionspd
+		p.actionspd = skins[p.mo.skin].actionspd
 	else
-		player.actionspd = terminal.FloatFixed(arg1)
+		p.actionspd = terminal.FloatFixed(arg1)
 	end
 end)
 
@@ -340,9 +342,6 @@ terminal.EvalOR = function(str) -- I'm fucking terrible at this. -Wolfs
 			start = i + 1
 		elseif (i == str:len()) then
 			table.insert(flags, _G[str:sub(start, i)])
-		--[[if (_G[str:sub(start, i)]) then
-			table.insert(flags, _G[str:sub(start, i)])
-			start = i + 2]]
 		end
 	end
 	for i, v in ipairs(flags) do

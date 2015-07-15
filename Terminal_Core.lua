@@ -21,7 +21,7 @@ terminal.GetPlayerFromString = function(src)
 end
 
 -- Function to turn a decimal number string into a fixed! (Wrote my own so we don't need to ask JTE for his c: -Red)
-terminal.FloatFixed = function(src) -- TODO: Rewrite certain bits under EvalMath
+terminal.FloatFixed = function(src)
 	if src == nil then return nil end
 	if not src:find("^-?%d+%.%d+$") then -- Not a valid number!
 		--print("FAK U THIS NUMBER IS SHITE")
@@ -158,26 +158,26 @@ terminal.colors = {
 }
 
 -- Can use OR to check for multiple permissions - must have all of them!
-terminal.HasPermission = function(player, permflags)
-	if player == server --[[or player == admin]] then return true end -- Server has ALL the permissions!
-	if not player.servperm then
-		player.servperm = 0
+terminal.HasPermission = function(p, permflags)
+	if p == server --[[or p == admin]] then return true end -- Server has ALL the permissions!
+	if not p.servperm then
+		p.servperm = 0
 	end
-	return (player.servperm & permflags) == permflags
+	return (p.servperm & permflags) == permflags
 end
 
-terminal.GivePermission = function(player, permflags)
-	if not player.servperm then
-		player.servperm = 0
+terminal.GivePermission = function(p, permflags)
+	if not p.servperm then
+		p.servperm = 0
 	end
-	player.servperm = $1|permflags
+	p.servperm = $1|permflags
 end
 
-terminal.RemovePermission = function(player, permflags)
-	if not player.servperm then
-		player.servperm = 0
+terminal.RemovePermission = function(p, permflags)
+	if not p.servperm then
+		p.servperm = 0
 	end
-	player.servperm = $1&~permflags
+	p.servperm = $1&~permflags
 end
 
 -- Raw console commands for permissions
@@ -313,18 +313,18 @@ local function getSymbol(player)
 end
 
 -- Function for retrieving the current team color.
-local function getTeamColor(player) 
+local function getTeamColor(p) 
 	if G_GametypeHasTeams() then
-		if player.ctfteam == 0 return terminal.colors.white end
-		if player.ctfteam == 1 then return terminal.colors.red end 
-		if player.ctfteam == 2 then return terminal.colors.blue end 
+		if p.ctfteam == 0 return terminal.colors.white end
+		if p.ctfteam == 1 then return terminal.colors.red end 
+		if p.ctfteam == 2 then return terminal.colors.blue end 
 	else return ""
 	end
 end
 
--- Grabs Terminal names, so the PlayerMsg hook below isn't a clustered mess.
-local function getTermName(player) 
-	return getSymbol(player)..getTeamColor(player)..player.name..terminal.colors.white
+-- Grabs Terminal names, so the pMsg hook below isn't a clustered mess.
+local function getTermName(p) 
+	return getSymbol(p)..getTeamColor(p)..p.name..terminal.colors.white
 end
 
 -- Manage player names - Wolfs
@@ -386,12 +386,12 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 end)
 
 -- Spectate yourself!
-COM_AddCommand("spectate", function(player)
-	if player.spectator or not player.mo then CONS_Printf(player, "You're already spectating!") return end
-	P_KillMobj(player.mo)
-	player.ctfteam = 0
-	player.spectator = true
-	print(player.name.." became a spectator.")
+COM_AddCommand("spectate", function(p)
+	if p.spectator or not p.mo then CONS_Printf(p, "You're already spectating!") return end
+	P_KillMobj(p.mo)
+	p.ctfteam = 0
+	p.spectator = true
+	print(p.name.." became a spectator.")
 end)
 
 --Player tracking! -Red
