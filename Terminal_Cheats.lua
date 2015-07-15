@@ -173,6 +173,7 @@ COM_AddCommand("scale", function(p, scale)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	local nScale = terminal.FloatFixed(scale)
 	if not nScale then
@@ -189,6 +190,7 @@ COM_AddCommand("charability", function(player, arg1)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if not arg1 then
 		CONS_Printf(player, "charability <ability>: Change your ability! Accepts CA_ arguments or numbers.")
 		return
@@ -196,7 +198,11 @@ COM_AddCommand("charability", function(player, arg1)
 	if arg1 == "default" then
 		player.charability = skins[player.mo.skin].ability
 	else
-		player.charability = _G[arg1:upper()]
+		if tonumber(arg1) then
+			player.charability = tonumber(arg1)
+		else
+			player.charability = _G[arg1:upper()]
+		end
 	end
 end)
 
@@ -206,6 +212,7 @@ COM_AddCommand("charability2", function(player, arg1)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if not arg1 then
 		CONS_Printf(player, "charability2 <ability>: Change your secondary ability! Accepts CA2_ arguments or numbers.")
 		return
@@ -213,7 +220,11 @@ COM_AddCommand("charability2", function(player, arg1)
 	if arg1 == "default" then
 		player.charability2 = skins[player.mo.skin].ability2
 	else
-		player.charability2 = _G[arg1:upper()]
+		if tonumber(arg1) then
+			player.charability2 = tonumber(arg1)
+		else
+			player.charability2 = _G[arg1:upper()]
+		end
 	end
 end)
 
@@ -223,6 +234,7 @@ COM_AddCommand("actionspd", function(player, arg1)
 		CONS_Printf(player, "You need \"cheatself\" permissions to use this!")
 		return
 	end
+	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if not arg1 then
 		CONS_Printf(player, "actionspd <value>: Change how fast you can execute abilities.")
 		return
@@ -320,6 +332,7 @@ terminal.EvalOR = function(str) -- I'm fucking terrible at this. -Wolfs
 	local flags = {}
 	local start = 1
 	local eval
+	if tonumber(str) then return tonumber(str) end
 	if _G[str] then return _G[str] end
 	for i = 1, str:len(), 1 do
 		if (str:sub(i, i) == "|") and (_G[str:sub(start, i-1)]) then

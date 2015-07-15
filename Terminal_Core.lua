@@ -300,7 +300,7 @@ end)]]
 -- Change the color of permission symbols. TODO: Option for permission color to be determined by team
 local cv_permcolor = CV_RegisterVar({"permissioncolor", "green", 0, {white = 1, purple = 2, yellow = 3, green = 4, blue = 5, red = 6, grey = 7, orange = 8}}) 
 
--- Player symbol management
+-- Player symbol management. The ... argument is only used for /me.
 local function getSymbol(player)
 	local function c(s) return terminal.colors[cv_permcolor.value]..s..terminal.colors.white end
 	if player == server then return c("~") end -- Server
@@ -312,10 +312,10 @@ local function getSymbol(player)
 	if (p & terminal.permissions.text.allcheat) then return c("+") end -- Cheater
 end
 
--- Function for retrieving the current team color
+-- Function for retrieving the current team color.
 local function getTeamColor(player) 
 	if G_GametypeHasTeams() then
-		if player.ctfteam == 0 then return terminal.colors.white end
+		if player.ctfteam == 0 return terminal.colors.white end
 		if player.ctfteam == 1 then return terminal.colors.red end 
 		if player.ctfteam == 2 then return terminal.colors.blue end 
 	else return ""
@@ -332,10 +332,8 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 	-- Moved this check to the start of the function so csays can start with / because why the fuck would you use csay to execute a console command
 	if msgtype == 3 then return false end -- TODO override cechos to allow cool shit like colors? -Red
 	
-	if message:sub(1, 1) == "/" then 
-		if message:sub(1, 4) == "/me " then
-			return false
-		elseif message:sub(1, 2) == "//" then -- Slash escaping; remove the first slash and parse msg as normal
+	if (message:sub(1, 1) == "/") and not (message:sub(1, 3) == "/me") then 
+		if message:sub(1, 2) == "//" then -- Slash escaping; remove the first slash and parse msg as normal
 			message = message:sub(2)
 		elseif message:sub(1, 3) == "/t " then -- Alias chat to a saytem
 			message = message:sub(4)
@@ -365,7 +363,11 @@ addHook("PlayerMsg", function(source, msgtype, target, message)
 	end
 	
 	if msgtype == 0 then 
-		print("<"..getTermName(source).."> "..message)
+		if message:sub(1, 3) == "/me" then
+			print(terminal.colors.yellow.."* "..getSymbol(source)..terminal.colors.yellow..getTeamColor(source)..source.name..terminal.colors.yellow..""..message:sub(4)) -- I didn't want to turn this into a clusterfuck. Unfortunately, it still is.
+		else
+			print("<"..getTermName(source).."> "..message)
+		end
 		S_StartSound(nil, sfx_radio)
 	elseif msgtype == 1 then 
 		for player in players.iterate do
@@ -385,11 +387,11 @@ end)
 
 -- Spectate yourself!
 COM_AddCommand("spectate", function(player)
-	player.rememberspectator = true
-	if not player.spectator == true then
-		player.spectator = true
-		print(player.name.." became a spectator.")
-	end
+	if player.spectator or not player.mo then CONS_Printf(player, "You're already spectating!") return end
+	P_KillMobj(player.mo)
+	player.ctfteam = 0
+	player.spectator = true
+	print(player.name.." became a spectator.")
 end)
 
 --Player tracking! -Red
@@ -786,7 +788,7 @@ manager (%): Players can change the game map and change other options.
 operator (@): Players get moderator and manager permissions.
 admin (&): Players can execute any command from the server's end using the "do" command.]],
 
-		credits = [[Terminal development credits:
+	credits = [[Terminal development credits:
 
 Script development:
   RedEnchilada
