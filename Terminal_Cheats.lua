@@ -366,7 +366,7 @@ COM_AddCommand("addflags", function(p, flagtype, ...)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not (... or flagtype) then
+	if not ... or not flagtype then
 		CONS_Printf(p, [[addflags <flagtype> <flags>: Add to your current flags! You can separate multiple flags with a space. Possible flag types are skin, mobj, mobj2, extra, and player. 
 Flags don't need prefixes (SF_) and can also be lowercase.
 Example usage: 'addflags skin runonwater noskid']])
@@ -377,7 +377,7 @@ Example usage: 'addflags skin runonwater noskid']])
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
 	
 	local setflags = terminal.generateFlags(flagtype, {...})
-	local cmd = table.concat({...}, " ")
+	local cmd = flagtype.." "..table.concat({...}, " ")
 	if setflags == nil then
 		CONS_Printf(p, "Error occurred while parsing "..terminal.colors.yellow..cmd..terminal.colors.white..".")
 		return
