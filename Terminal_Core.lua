@@ -281,7 +281,7 @@ COM_AddCommand("removepermission", function(p, arg1, arg2)
 	end) end
 end)
 
--- Outdated hack for dedicated servers. Thanks to 2.1.10+, we don't need any of this shit!
+-- Outdated hack for dedicated servers. Thanks to 2.1.9+, we can point directly to the struct!
 -- local dediServer
 
 --[[COM_AddCommand("iamtheserver", function(p)
@@ -290,6 +290,11 @@ end)
 	--COM_BufInsertText(p, "wait 15;wait 15;wait 15;iamtheserver") -- To keep syncing it for players! (lol NetVars hook still being broken)
 end, 1)]]
 
+function A_MServ()
+	if not netgame then return server end -- Should work properly in SP since this is here
+	if server then return server else return dedicatedserver end
+end
+
 -- Deprecated synchronization code
 --[[addHook("PlayerJoin", do
 	if dediServer and dediServer.valid then
@@ -297,8 +302,6 @@ end, 1)]]
 	end
 end)]]
 
--- Change the color of permission symbols. TODO: Option for permission color to be determined by team
-local cv_permcolor = CV_RegisterVar({"permissioncolor", "green", 0, {white = 1, purple = 2, yellow = 3, green = 4, blue = 5, red = 6, grey = 7, orange = 8}}) 
 
 -- Player symbol management. The ... argument is only used for /me.
 local function getSymbol(player)
@@ -493,7 +496,7 @@ COM_AddCommand("changemap", function(p, ...)
 	local cmd = "map"..terminal.ConsoleCommand(...)
 	
 	-- TODO make this less of a lazy hack
-	COM_BufInsertText(server, cmd)
+	COM_BufInsertText(A_MServ(), cmd)
 	CONS_Printf(p, "Changing map... (If nothing happens, try -force or -gametype!)")
 end)
 
@@ -543,7 +546,7 @@ COM_AddCommand("dokick", function(p, arg1, ...)
 	end
 	
 	CONS_Printf(player, terminal.colors.red..("FULL KICK REASON FROM %s:"):format(p.name)..terminal.ConsoleCommand(...))
-	COM_BufInsertText(server, ("kick %s <%s>"):format(#player, p.name)..terminal.ConsoleCommand(...))
+	COM_BufInsertText(A_MServ(), ("kick %s <%s>"):format(#player, p.name)..terminal.ConsoleCommand(...))
 end)
 
 -- SRB2 seriously needs a super() function for replaced commands.
@@ -568,7 +571,7 @@ COM_AddCommand("doban", function(p, arg1, ...)
 	end
 	
 	CONS_Printf(player, terminal.colors.red..("FULL BAN REASON FROM %s:"):format(p.name)..terminal.ConsoleCommand(...))
-	COM_BufInsertText(server, ("ban %s <%s>"):format(#player, p.name)..terminal.ConsoleCommand(...))
+	COM_BufInsertText(A_MServ(), ("ban %s <%s>"):format(#player, p.name)..terminal.ConsoleCommand(...))
 end)
 
 -- "do" command, for ultimate power! (And this one doesn't need the command to be wrapped in quotes! -Red)
@@ -597,8 +600,8 @@ COM_AddCommand("do", function(p, ...)
 	local cmd = terminal.ConsoleCommand(...)
 	--print(cmd)
 	CONS_Printf(p, "Executing"..terminal.colors.yellow..cmd..terminal.colors.white.." in the server console.")
-	CONS_Printf(server, terminal.colors.yellow..p.name.." executed the following in the server console: "..terminal.colors.blue..">"..cmd:sub(2))
-	COM_BufInsertText(server, cmd)
+	CONS_Printf(A_MServ(), terminal.colors.yellow..p.name.." executed the following in the server console: "..terminal.colors.blue..">"..cmd:sub(2))
+	COM_BufInsertText(A_MServ(), cmd)
 end)
 
 -- "findmap" command; go to a map by name! :O
