@@ -3,7 +3,7 @@
 
 assert(terminal, "the Terminal core script must be added first!")
 
--- If it's a cheat in vanilla, it's here. If it isn't, it probably is anyways.
+-- If it's a cheat in vanilla, it's here. If it isn't, it probably is anyway.
 
 --SetRings Command
 COM_AddCommand("setrings", function(p, health)

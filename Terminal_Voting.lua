@@ -7,7 +7,7 @@ assert(terminal, "the Terminal core script must be added first!")
 
 -- Easy way to grab the server's voting table
 local function voting()
-	local s = A_MServ()
+	local s = terminal.server()
 	if not (s and s.valid) then return nil end
 	return s.voting
 end
@@ -28,7 +28,7 @@ local POLL_RESETMAP       = 8
 local POLL_START          = 256
 
 local function pollopts()
-	local s = A_MServ()
+	local s = terminal.server()
 	if not s.pollopts then
 		s.pollopts = {
 			timeout = 60,
@@ -211,7 +211,7 @@ local function getMapChangePoll(poll, polltype)
 		
 		poll.answers = answerstringlist
 		poll.done = function(poll, winner)
-				COM_BufInsertText(A_MServ(), answermaplist[winner])
+				COM_BufInsertText(terminal.server(), answermaplist[winner])
 		end
 		return poll
 end
@@ -220,7 +220,7 @@ local function startPoll(polltype, arg)
 	local poll = {
 		votes = {},
 		votemap = {},
-		answers = {"Bologna", "Alfalfa", "LOL O HAY GUIZ", "because "..server.name.." sucks"},
+		answers = {"Bologna", "Alfalfa", "LOL O HAY GUIZ", "because "..terminal.server().name.." sucks"},
 		question = "Why doesn't this poll have a question set?!",
 		timer = pollopts().timeout*TICRATE,
 		tiebreaker = function(...) -- This deals with ties. The default functionality is to return a random option from the ones given. (Args are each option in a tie)
@@ -256,7 +256,7 @@ local function startPoll(polltype, arg)
 		poll.tiebreaker = do return 2 end
 		poll.done = function(poll, winner)
 			if winner == 1 then
-				COM_BufInsertText(A_MServ(), "teamscramble 0;wait 1;teamscramble 1")
+				COM_BufInsertText(terminal.server(), "teamscramble 0;wait 1;teamscramble 1")
 			end
 		end
 	elseif polltype == POLL_ENDMAP then
@@ -265,7 +265,7 @@ local function startPoll(polltype, arg)
 		poll.tiebreaker = do return 2 end
 		poll.done = function(poll, winner)
 			if winner == 1 then
-				COM_BufInsertText(A_MServ(), "exitlevel")
+				COM_BufInsertText(terminal.server(), "exitlevel")
 			end
 		end
 	elseif polltype == POLL_RESETMAP then
@@ -274,7 +274,7 @@ local function startPoll(polltype, arg)
 		poll.tiebreaker = do return 2 end
 		poll.done = function(poll, winner)
 			if winner == 1 then
-				COM_BufInsertText(A_MServ(), "map "..G_BuildMapName(gamemap).." -force")
+				COM_BufInsertText(terminal.server(), "map "..G_BuildMapName(gamemap).." -force")
 			end
 		end
 	elseif polltype == POLL_KICK then
@@ -287,7 +287,7 @@ local function startPoll(polltype, arg)
 				print("Player no longer present. Ignoring votekick results...")
 			elseif winner == 1 then
 				--print(("kick %s Votekicked from server"):format(#arg))
-				COM_BufInsertText(A_MServ(), ("kick %s Votekicked from server"):format(#arg))
+				COM_BufInsertText(terminal.server(), ("kick %s Votekicked from server"):format(#arg))
 			else
 				print(("Attempt to kick %s failed."):format(arg.name))
 			end
@@ -309,7 +309,7 @@ local function startPoll(polltype, arg)
 		end
 	end
 	
-	A_MServ().voting = poll
+	terminal.server().voting = poll
 end
 
 -- Command to start a vote
@@ -448,7 +448,7 @@ local function resolvePoll(force)
 	end
 	if #winners == 0 then
 		if not force then return end -- Give ties a chance to resolve if the time isn't up
-		A_MServ().voting = nil -- Just kill the poll if nobody voted before timeup... ._.
+		terminal.server().voting = nil -- Just kill the poll if nobody voted before timeup... ._.
 		return
 	end
 	if #winners > 1 then
@@ -461,7 +461,7 @@ local function resolvePoll(force)
 		newpollset = poll.done(poll, winners)
 	end
 	if not newpollset then
-		A_MServ().voting = nil
+		terminal.server().voting = nil
 	end
 end
 
@@ -612,5 +612,5 @@ COM_AddCommand("removepoll", function(p)
 		return
 	end
 	print(p.name.." removed the current poll without resolving it.")
-	A_MServ().voting = nil
+	terminal.server().voting = nil
 end)

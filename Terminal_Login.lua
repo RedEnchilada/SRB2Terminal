@@ -6,7 +6,7 @@ assert(terminal, "the Terminal core script must be added first!")
 --local logPasses = {} -- name = {hash, perms},
 
 local function logPasses()
-	local s = A_MServ()
+	local s = terminal.server()
 	if not s then return {} end -- Error!
 	if not s.logPasses then
 		s.logPasses = {}
@@ -23,8 +23,8 @@ end
 
 -- Command used by a server-side script to load password hashes
 COM_AddCommand("loadhash", function(p, name, hash, perms)
-	if p ~= A_MServ() then return end
-	server.logPasses[name] = {tonumber(hash), tonumber(perms)}
+	if p ~= terminal.server() then return end
+	terminal.server().logPasses[name] = {tonumber(hash), tonumber(perms)}
 end, 1)
 
 local function passwordHash(original)
@@ -62,7 +62,7 @@ COM_AddCommand("login", function(p, arg1, arg2)
 	local passes = logPasses()
 	
 	if not (passes[name] and passes[name][1] == pass) then
-		CONS_Printf(A_MServ(), p.name.." tried unsuccessfully to log in.")
+		CONS_Printf(terminal.server(), p.name.." tried unsuccessfully to log in.")
 		CONS_Printf(p, terminal.colors.yellow.."Login incorrect."..terminal.colors.white)
 		return
 	end
@@ -101,7 +101,7 @@ COM_AddCommand("register", function(p, pass)
 	
 	passes[name] = {pass, p.servperm}
 	
-	local s = A_MServ()
+	local s = terminal.server()
 	CONS_Printf(s, ([[
 	
 %sMSERV_REGISTER:%s %s
@@ -128,7 +128,7 @@ COM_AddCommand("password", noOldAuth)
 
 -- Name protection, NickServ-style!
 local function nickservopts() -- TODO: NickServ Ghost-style reclamation
-	local s = A_MServ()
+	local s = terminal.server()
 	if not s then return end -- ABORT ABORT ADJGDFSOIHHO
 	if not s.nickservopts then
 		s.nickservopts = {
