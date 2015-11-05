@@ -299,6 +299,9 @@ end)
 
 terminal.server = function()
 	if not netgame then return server end -- Should work properly in SP since this is here
+	if dediServer and (not dediServer.valid) then
+		dediServer = nil
+	end
 	return server or dediServer
 end
 
