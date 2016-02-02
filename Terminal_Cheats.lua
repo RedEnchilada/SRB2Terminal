@@ -3,6 +3,8 @@
 
 assert(terminal, "the Terminal core script must be added first!")
 
+terminal.modules.cheats = 1 -- Cheats module is added, update global table.
+
 -- If it's a cheat in vanilla, it's here. If it isn't, it probably is anyways.
 
 --SetRings Command

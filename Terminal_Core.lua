@@ -7,6 +7,8 @@
 -- Declare terminal library in global namespace
 rawset(_G, "terminal", {})
 
+terminal.modules = {} -- Table for storing Terminal modules, allows checking for added modules!
+
 
 -- Helper function for identifying a player
 terminal.GetPlayerFromString = function(src)
@@ -322,7 +324,7 @@ local function getTeamColor(p)
 	end
 end
 
--- Grabs Terminal names, so the pMsg hook below isn't a clustered mess.
+-- Grabs Terminal names, so the PlayerMsg hook below isn't a clustered mess.
 local function getTermName(p) 
 	return getSymbol(p)..getTeamColor(p)..p.name..terminal.colors.white
 end

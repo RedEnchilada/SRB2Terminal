@@ -3,6 +3,8 @@
 
 assert(terminal, "the Terminal core script must be added first!")
 
+terminal.modules.voting = 1 -- Voting module is added, update global table.
+
 -- Map voting! (And other types of voting, while we're here!)
 
 -- Easy way to grab the server's voting table
@@ -564,6 +566,11 @@ COM_AddCommand("votetime", function(p, timer)
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
 		return
 	end
+	if timer == "default" then
+		pollopts().timeout = 60
+		print(p.name.."changed vote time to default (60 seconds).")
+		return
+	end
 	timer = tonumber(timer)
 	if not timer then
 		CONS_Printf(p, "votetime <time>: Set the time limit to vote on a poll, in seconds.")
@@ -577,6 +584,11 @@ end)
 COM_AddCommand("pollthrottle", function(p, timer)
 	if not terminal.HasPermission(p, terminal.permissions.text.manager) then
 		CONS_Printf(p, "You need \"manager\" permissions to use this!")
+		return
+	end
+	if timer == "default" then
+		pollopts().limiter = 6
+		print(p.name.." changed poll throttle to default (6 minutes).")
 		return
 	end
 	timer = tonumber(timer)

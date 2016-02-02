@@ -3,6 +3,8 @@
 
 assert(terminal, "the Terminal core script must be added first!")
 
+terminal.modules.login = 1 -- Login module is added, update global table
+
 --local logPasses = {} -- name = {hash, perms},
 
 local function logPasses()
@@ -168,11 +170,16 @@ COM_AddCommand("logintime", function(p, val)
 		CONS_Printf(p, "You need \"moderator\" permissions to use this!")
 		return
 	end
-	if not tonumber(val) or tonumber(val) < 0 then
+	if (not tonumber(val) or tonumber(val) < 0) and val ~= "default" then
 		CONS_Printf(p, "logintime <value>: Sets the timeout a player has to login to an account nickname before being forcibly renamed. Default timeout is 30 seconds. (set to 0 to disable)")
 		return
 	end
 	local o = nickservopts()
+	if val == "default" then
+		o.timeout = 30
+		print(p.name.." changed login timeout to default setting (30 seconds).")
+		return
+	end
 	o.timeout = tonumber(val)
 	if o.timeout then
 		print(p.name.." changed login timeout to "..o.timeout.." seconds.")
@@ -191,6 +198,11 @@ COM_AddCommand("defaultname", function(p, val)
 		return
 	end
 	local o = nickservopts()
+	if val == "default" then -- This looks redundant as hell.
+		o.default = "Guest"
+		CONS_Printf(p, "Default guest name changed to default setting (Guest).")
+		return
+	end
 	o.default = val
 	CONS_Printf(p, ("Default guest name changed to %s."):format(val))
 end)
