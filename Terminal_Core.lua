@@ -839,5 +839,5 @@ end)
 
 -- Show that Terminal is being run on the scores screen!
 hud.add(function(v)
-	v.drawString(320, 192, "Server running Terminal (GitHub version)", V_ALLOWLOWERCASE|V_40TRANS, "right")
+	v.drawString(320, 192, "Server running Terminal (Git version)", V_ALLOWLOWERCASE|V_40TRANS, "right")
 end, "scores")

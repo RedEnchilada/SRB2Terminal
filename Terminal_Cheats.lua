@@ -13,18 +13,15 @@ COM_AddCommand("setrings", function(p, health)
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
 	end
-	health = tonumber(health)
-	if health and health >= 9999
-		health = 9999
-	end
-	if health and health < 0
-		health = nil
-	end
-	if health == nil
+	if not health or (tonumber(health) < 0) then
 		CONS_Printf(p, "setrings <number of rings>: Sets everyone's rings to a specific number.")
 		return
 	end
-	for player in players.iterate
+	health = tonumber(health)
+	if (health >= 9999) then
+		health = 9999
+	end
+	for player in players.iterate do
 		if player.spectator then continue end
 		player.health = health 
 		player.mo.health = health 
@@ -38,19 +35,15 @@ COM_AddCommand("setlives", function(p, lives)
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
 	end
-	lives = tonumber(lives)
-	if lives then
-		if lives >= 127 then
-			lives = 127
-		end
-		if lives < 0 then
-			lives = nil
-		end
-	else
+	if not lives or (tonumber(lives) < 0) then 
 		CONS_Printf(p, "setlives <number of lives>: Sets the player's lives to a specific number.")
 		return
 	end
-	for player in players.iterate
+	lives = tonumber(lives)
+	if (lives >= 127) then
+		lives = 127
+	end
+	for player in players.iterate do
 		player.lives = lives
 	end
 end)
@@ -62,7 +55,7 @@ COM_AddCommand("god", function(p)
 		return
 	end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
-	if not (p.pflags & PF_GODMODE)
+	if not (p.pflags & PF_GODMODE) then
 		p.pflags = $1|PF_GODMODE
 		CONS_Printf(p, "Sissy mode enabled.")
 	else 
@@ -78,7 +71,7 @@ COM_AddCommand("noclip", function(p)
 		return
 	end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
-	if not (p.pflags & PF_NOCLIP)
+	if not (p.pflags & PF_NOCLIP) then
 		p.pflags = $1|PF_NOCLIP
 		CONS_Printf(p, "NoClip enabled.")
 	else 
@@ -114,7 +107,7 @@ COM_AddCommand("devmode", function(p)
 		CONS_Printf(p, "You need \"cheatself\" permissions to use this!")
 		return
 	end
-	if not p.devmodeOn
+	if not p.devmodeOn then
 		p.devmodeOn = true
 		CONS_Printf(p, "Not actually developer mode enabled.")
 	else 
@@ -154,9 +147,9 @@ end)
 COM_AddCommand("suicide", function(p)
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end
 	if p.playerstate ~= PST_LIVE then CONS_Printf(p, "You're dead, stupid.") return end
-	if p.mo and p.mo.health > 0
+	if p.mo and p.mo.health > 0 then
 		P_DamageMobj(p.mo, nil, nil, 10000)
-		print(p.name+" committed seppuku.")
+		print(p.name.." committed seppuku.")
 	end
 end)
 
@@ -438,11 +431,9 @@ COM_AddCommand("destroyallenemies", function(p)
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
 	end
-	for player in players.iterate
-		for mobj in thinkers.iterate("mobj") do
-			if ((mobj.valid) and ((mobj.flags & MF_ENEMY) or (mobj.flags & MF_BOSS))) then
-				P_KillMobj(mobj, player.mo, player.mo)
-			end
+	for mobj in thinkers.iterate("mobj") do
+		if ((mobj.valid) and ((mobj.flags & MF_ENEMY) or (mobj.flags & MF_BOSS))) then
+			P_KillMobj(mobj, p.mo, p.mo)
 		end
 	end
 end)
