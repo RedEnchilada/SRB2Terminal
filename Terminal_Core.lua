@@ -422,7 +422,7 @@ local function R_GetScreenCoords(p, c, mx, my, mz)
 	if x > ANGLE_90 or x < ANGLE_270 then
 		x = 9999*FRACUNIT
 	else
-		x = FixedMul(tan(x+ANGLE_90), 160<<FRACBITS)+160<<FRACBITS
+		x = FixedMul(tan(x, true), 160<<FRACBITS)+160<<FRACBITS
 	end
 	
 	local y = camz-mz
