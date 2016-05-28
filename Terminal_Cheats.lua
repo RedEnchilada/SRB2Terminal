@@ -1,4 +1,4 @@
--- Terminal Cheats:
+-- Terminal Cheats
 -- Optional file. Meant to screw with the game! (Requires Terminal_Core.lua)
 
 assert(terminal, "the Terminal core script must be added first!")

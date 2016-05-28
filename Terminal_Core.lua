@@ -300,7 +300,7 @@ end)]]
 -- Change the color of permission symbols. TODO: Option for permission color to be determined by team
 local cv_permcolor = CV_RegisterVar({"permissioncolor", "green", 0, {white = 1, purple = 2, yellow = 3, green = 4, blue = 5, red = 6, grey = 7, orange = 8}}) 
 
--- Player symbol management. The ... argument is only used for /me.
+-- Player symbol management.
 local function getSymbol(player)
 	local function c(s) return terminal.colors[cv_permcolor.value]..s..terminal.colors.white end
 	if player == server then return c("~") end -- Server
