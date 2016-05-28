@@ -196,7 +196,11 @@ COM_AddCommand("charability", function(p, arg1)
 		if tonumber(arg1) then
 			p.charability = tonumber(arg1)
 		else
-			p.charability = _G[arg1:upper()]
+			if (arg1:sub(1, 3):upper() == "CA_") then
+				p.charability = _G[arg1:upper()]
+			else
+				p.charability = _G["CA_"..arg1:upper()]
+			end
 		end
 	end
 end)
@@ -218,7 +222,11 @@ COM_AddCommand("charability2", function(p, arg1)
 		if tonumber(arg1) then
 			p.charability2 = tonumber(arg1)
 		else
-			p.charability2 = _G[arg1:upper()]
+			if (arg1:sub(1, 4):upper() == "CA2_") then
+				p.charability2 = _G[arg1:upper()]
+			else
+				p.charability2 = _G["CA2_"..arg1:upper()]
+			end
 		end
 	end
 end)
@@ -441,6 +449,10 @@ COM_AddCommand("spawnobject", function(p, objecttype)
 	if not terminal.HasPermission(p, terminal.permissions.text.cheatglobal) then
 		CONS_Printf(p, "You need \"cheatglobal\" permissions to use this!")
 		return
+	end
+	objecttype = $1:upper()
+	if (objecttype:sub(1, 3) ~= "MT_") then
+		objecttype = "MT_"..$1
 	end
 	if not objecttype then CONS_Printf(p, "spawnobject <mobj>: Spawns the corresponding mobj 100 fracunits in front of you!") return end
 	if not p.mo then CONS_Printf(p, "You can't use this while you're spectating.") return end

@@ -281,7 +281,7 @@ COM_AddCommand("removepermission", function(p, arg1, arg2)
 	end) end
 end)
 
--- Outdated hack for dedicated servers. Thanks to 2.1.10+, we don't need any of this shit!
+-- Outdated hack for dedicated servers. Thanks to 2.1.15+, we don't need any of this shit!
 -- local dediServer
 
 --[[COM_AddCommand("iamtheserver", function(p)
@@ -461,14 +461,14 @@ hud.add(function(v, p, c)
 			local x, y = R_GetScreenCoords(p, c, player.mo.x, player.mo.y, player.mo.z + 20*player.mo.scale)
 			if x < 0 or x > 320*FRACUNIT or y < 0 or y > 200*FRACUNIT then return end
 			v.drawScaled(x, y, FRACUNIT/2, patch, V_40TRANS)
-			v.drawString(x/FRACUNIT+1, y/FRACUNIT+1, player.name, V_ALLOWLOWERCASE|V_40TRANS, "small-left")
+			v.drawString(x/FRACUNIT+1, y/FRACUNIT+1, player.name, V_ALLOWLOWERCASE|V_40TRANS, "left")
 		end) end
 	end
 end, "game")
 
 -- Previously part of Terminal_Cheats. Showplayers is awesome though, so it's in Core now.
 COM_AddCommand("showplayers", function(p)
-	if not p.showPOn
+	if not p.showPOn then
 		p.showPOn = true
 		--CONS_Printf(p, "The Eggman Empire is ALWAYS watching its subjects...")
 		CONS_Printf(p, "Player location display enabled.")
