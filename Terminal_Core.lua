@@ -1,4 +1,4 @@
--- Terminal (GitHub working version) - The first SRB2 server hosting overhaul utility!
+-- Terminal v1.2 - The first SRB2 server hosting overhaul utility!
 -- Created by Wolfy and RedEnchilada
 -- Special thanks to Steel Titanium, Puppyfaic, and SonicX8000 for testing!
 
@@ -837,5 +837,5 @@ end)
 
 -- Show that Terminal is being run on the scores screen!
 hud.add(function(v)
-	v.drawString(320, 192, "Server running Terminal (Git version)", V_ALLOWLOWERCASE|V_40TRANS, "right")
+	v.drawString(320, 192, "Server running Terminal v1.2", V_ALLOWLOWERCASE|V_40TRANS, "right")
 end, "scores")
